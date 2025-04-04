@@ -62,12 +62,14 @@ export class CreateProductComponent {
       image_url: this.image_url, 
     };
 
+    console.log(val);
+
     this.productService.postProduct(val).subscribe(res => {
       alert('Thêm thành công!');
       this.router.navigate(['/admin/products/list/', 0]);
     }, err => {
       console.error('Error:', err);
-      alert('An error occurred while creating the product');
+      alert('Đã xảy ra lỗi trong khi tạo sản phẩm');
     });
   }
 

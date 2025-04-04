@@ -31,6 +31,11 @@ export class OrderDetailService {
       return this.http.get<any>(url, this.httpOptions);
     }
 
+    getOrderDetailByOrderId(id: number): Observable<any> {
+      const url = `${this.apiUrl}/Order_Details/orderID/${id}`;
+      return this.http.get<any>(url, this.httpOptions);
+    }
+
     getOrderDetailId(id: number): Observable<any> {
       const url = `${this.apiUrl}/Order_Details/${id}`;
       return this.http.get<any>(url, this.httpOptions);

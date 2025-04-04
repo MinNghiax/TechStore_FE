@@ -98,17 +98,18 @@ export class ListDonhangComponent implements OnInit {
     });
     })
   }
+
   xoaDsDonhang(donhang: Order) {
-    this.orderService.deleteOrder(donhang.order_id).subscribe(
-      (data) => {
-        console.log(data);
+    this.orderService.deleteOrder(donhang.order_id).subscribe({
+      next: () => {
         this.tailaiDSDonhang();
         if (this.orderSearch && this.orderSearch.length > 0) {
           this.orderSearch = this.orderSearch.filter(order => order.order_id !== donhang.order_id);
         }
-      }
-    );
+      },
+  });
   }
+
   formatDate(date: Date): string {
     const d = new Date(date);
     const month = '' + (d.getMonth() + 1);
@@ -170,11 +171,11 @@ export class ListDonhangComponent implements OnInit {
       this.orderService.timkiem(this.searchText).subscribe({
         next: (orderSearch) => {
           // First, filter orders based on `order_id` or `customer_name` (if available)
-          this.orderSearch = orderSearch.filter(order => 
-            order.order_id.toString().includes(this.searchText.trim())
+          // this.orderSearch = orderSearch.filter(order => 
+          //   order.order_id.toString().includes(this.searchText.trim())
             
-            );
-           
+          //   );
+          this.orderSearch = orderSearch;
           this.orderSearch.forEach(order => {
             if (!order.customer_name) { // If the customer name isn't already available
               this.UserService.getUserById(order.customer_id).subscribe(user => {

@@ -29,7 +29,7 @@ export class FilterByCategoryComponent {
 
   paginatedProducts: Product[] = [];
   currentPage: number = 1;
-  pageSize: number = 4; // Number of products per page
+  pageSize: number = 8; // Number of products per page
   totalPages: number = 0;
 
   ngOnInit() {
@@ -151,24 +151,25 @@ export class FilterByCategoryComponent {
   
 
 
-  // Phương thức gọi khi người dùng chọn lọc giá
-  onFilterChange(event: any): void {
-    const priceCategory = event.target.value;
+onFilterChange(event: any): void {
+  const priceCategory = event.target.value;
 
-    if (this.categoryId !== null) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { priceCategory: priceCategory || null },
-        queryParamsHandling: 'merge',
-      });
+  if (this.categoryId !== null) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { priceCategory: priceCategory || null },
+      queryParamsHandling: 'merge', // Đảm bảo các params khác không bị thay đổi
+    });
 
-      if (priceCategory) {
-        this.searchProducts(this.categoryId, priceCategory);
-      } else {
-        this.DsSP = [];
-      }
+    if (priceCategory) {
+      // Kiểm tra lại logic để gọi đúng phương thức lọc với categoryId và priceCategory
+      this.searchProducts(this.categoryId, priceCategory);
     } else {
-      console.error('Category ID is not defined.');
+      this.DsSP = []; // Xóa dữ liệu nếu không có giá trị lọc
     }
+  } else {
+    console.error('Category ID is not defined.');
   }
+}
+
 }

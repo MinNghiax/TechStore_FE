@@ -53,24 +53,4 @@ export class ListOrderComponent {
   viewOrderDetails(Id: number): void {
     this.router.navigate(['home/order/detailOrder/', Id]);
   }
-  // huyOrderDetail(orderId: OrderDetails) {
-  //   this.productService.deleteOrder(orderId.order_id).subscribe(
-  //     (data) => {
-  //       console.log('Order canceled successfully:', data);
-        
-  //       // Remove the order from the `orders` list
-  //       this.orders = this.orders.filter(order => order.order_id !== orderId.order_id);
-  
-  //       // If you also have a separate list for `order_details`, update it as well
-  //       this.order_details = this.order_details.filter(detail => detail.order_id !== orderId.order_id);
-  
-  //       // Optionally, navigate to another page or refresh view
-  //       this.router.navigate(['/admin']);
-  //     },
-  //     (error) => {
-  //       console.error('Error canceling order:', error);
-  //       // Optionally, handle the error and show an error message
-  //     }
-  //   );
-  // }
 }

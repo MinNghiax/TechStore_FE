@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { User } from '../Models/users';
 import { Observable, BehaviorSubject  } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,7 @@ export class userService {
   private authenticatedSubject = new BehaviorSubject<boolean>(false); // BehaviorSubject to emit authentication state
 
   private currentUser: User | null = null;
+  message: any;
   constructor(private http: HttpClient) {}
 
   getUsers(): Observable<any> {
@@ -61,24 +62,67 @@ export class userService {
     return this.authenticatedSubject.asObservable();
   }
 
-  login(username: string, password: string): Observable<any> {
-    const formData: FormData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
+  // login(username: string, password: string): Observable<any> {
+  //   const formData: FormData = new FormData();
+  //   formData.append('username', username);
+  //   formData.append('password', password);
 
-    return this.http.post(`${this.apiUrl}/login`, formData, { withCredentials: true })
-      .pipe(
-        tap(res => {
-          if (res.success) {
-            this.setAuthenticated(true);
-            localStorage.setItem('userId', res.user.user_id);
-            localStorage.setItem('username', res.user.username);
+  //   return this.http.post(`${this.apiUrl}/login`, formData, { withCredentials: true })
+  //     .pipe(
+  //       tap(res => {
+  //         if (res.success) {
+  //           this.setAuthenticated(true);
+  //           localStorage.setItem('userId', res.user.user_id);
+  //           localStorage.setItem('username', res.user.username);
 
-            console.log('UserId:', localStorage.getItem('userId'));
-            console.log('Username:', localStorage.getItem('username'));
+  //           console.log('UserId:', localStorage.getItem('userId'));
+  //           console.log('Username:', localStorage.getItem('username'));
+  //         }
+  //       })
+  //     );
+  // }
+
+
+  // login(username: string, password: string): Observable<any> {
+  //   const loginRequest = { username, password };
+  
+  //   return this.http.post(`${this.apiUrl}/login`, loginRequest, { headers: { 'Content-Type': 'application/json' }, withCredentials: true })
+  //     .pipe(
+  //       tap(res => {
+  //         if (res.success) {
+  //           this.setAuthenticated(true);
+  //           localStorage.setItem('userId', res.user.user_id);
+  //           localStorage.setItem('username', res.user.username);
+  
+  //           console.log('UserId:', localStorage.getItem('userId'));
+  //           console.log('Username:', localStorage.getItem('username'));
+  //         }
+  //       })
+  //     );
+  // }
+  login(loginRequest: { Username: string; Password: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, loginRequest, {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true
+    }).pipe(
+      tap(response => {
+        // Handle the response (optional additional logic can go here)
+        //console.log(response);
+        if (response.Success) {
+          this.setAuthenticated(true);
+          localStorage.setItem('userId', response.User.user_id);
+          localStorage.setItem('username', response.User.username);
+
+          console.log('UserId:', localStorage.getItem('userId'));
+          console.log('Username:', localStorage.getItem('username'));
           }
-        })
-      );
+      })
+    );
+  }
+
+  getUserRole(): string {
+    // This method should return the role of the logged-in user, e.g., 'admin' or 'user'.
+    return localStorage.getItem('userRole'); // or use another logic based on how you store roles
   }
 
   logout(): Observable<any> {
@@ -102,8 +146,6 @@ export class userService {
   // }
   
   getUserId(){
-
-    
   return localStorage.getItem('userId'); 
   }
 

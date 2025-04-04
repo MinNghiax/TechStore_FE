@@ -7,6 +7,7 @@ import { Product } from '../../../Models/product';
 import { ProductService } from '../../../Service/productService';
 import { userService } from '../../../Service/userService'; 
 import { OrderService } from '../../../Service/order-service';
+import { Order } from '../../../Models/order';
 
 
 
@@ -38,6 +39,7 @@ export class DetailOrderComponent {
 
   ngOnInit() {
     const orderId = Number(this.route.snapshot.paramMap.get('id'));
+    console.log("orrderId", orderId);
     if (orderId) {
       this.loadOrderDetails(orderId);
 
@@ -86,7 +88,6 @@ export class DetailOrderComponent {
     });
   }
   
-
   loadProducts(id: number): void {
     this.productService.getProductDetails(id).subscribe({
       next: (product) => {
@@ -116,27 +117,44 @@ export class DetailOrderComponent {
     });
 
   }
-
-
-  huyOrderDetail(orderId: OrderDetails) {
-    this.orderService.deleteOrder(orderId.order_id).subscribe(
-      (data) => {
   
-        // Redirect to the order list or confirmation page after cancellation
-        this.router.navigate(['home/order/listOrder']); // Navigate back to the order list page if needed
+
+  huyOrderDetail(order: OrderDetails) {
+    // Gọi API để lấy thông tin chi tiết của đơn hàng từ backend
+    this.orderService.getOrderById(order.order_id).subscribe(
+      (orderDetails: Order) => {
+        // Kiểm tra trạng thái đơn hàng
+        if (orderDetails.order_status === "Đang vận chuyển") {
+          alert('Đơn hàng đang vận chuyển, không thể hủy!');
+          return; // Dừng thực hiện nếu trạng thái không hợp lệ
+        }
+  
+        // Nếu trạng thái hợp lệ, tiếp tục gọi API hủy đơn
+        this.orderService.deleteOrder(orderDetails.order_id).subscribe(
+          (data) => {
+            alert('Đơn hàng đã được hủy thành công.');
+            // Điều hướng lại trang danh sách đơn hàng
+            this.router.navigate(['home/user/viewOH', this.id_customer]);
+          },
+          (error) => {
+            console.error('Lỗi khi hủy đơn hàng:', error);
+            alert('Không thể hủy đơn hàng. Vui lòng thử lại sau.');
+          }
+        );
       },
       (error) => {
-        console.error('Error canceling order:', error);
-        // Optionally, handle the error and show an error message
+        console.error('Lỗi khi lấy thông tin đơn hàng:', error);
+        alert('Không thể kiểm tra trạng thái đơn hàng. Vui lòng thử lại sau.');
       }
     );
   }
+  
   
 
 
 
   // Navigate back to the order list page
-  goBackToOrderList(): void {
-    this.router.navigate(['home/order/listOrder/']); // Assuming the route for order list is '/order-list'
+  goBackToOrderList( ): void {
+    this.router.navigate(['home/user/viewOH', this.id_customer]); // Assuming the route for order list is '/order-list'
   }
 }

@@ -16,6 +16,7 @@ export class ListUsersComponent {
   username: string;
   email: string;
   phone:string;
+  password: string;
   address: string;
   create_at: Date;
 
@@ -60,8 +61,8 @@ export class ListUsersComponent {
       this.email = this.selected_user.email;
       this.phone = this.selected_user.phone;
       this.address = this.selected_user.address;
+      this.password =this.selected_user.password;
       this.create_at = this.selected_user.create_at;   // Format the date properly
-      console.log('Create_at:', this.create_at);
     }
     
   
@@ -76,19 +77,19 @@ export class ListUsersComponent {
         username: this.username,
         email: this.email,
         phone: this.phone,
+        password: this.selected_user.password,
         address: this.address,
-        create_at: this.formatDate(this.create_at),  // Sử dụng hàm tiện ích để định dạng ngày tháng
+        create_at: this.create_at,  // Sử dụng hàm tiện ích để định dạng ngày tháng
         role_id: 2
       };
-      console.log(val);
       this.userService.updateUser(this.selected_user.user_id, val).subscribe(
         response => {
           this.DsUser();
           console.log('Sửa thành công:', response);
-          alert('Sửa danh mục thành công!');
+          alert('Sửa User thành công!');
         },
         error => {
-          console.error('Có lỗi khi sửa danh mục!', error);
+          console.error('Có lỗi khi!', error);
           if (error.error) {
             console.error('Chi tiết lỗi:', error.error);
           }

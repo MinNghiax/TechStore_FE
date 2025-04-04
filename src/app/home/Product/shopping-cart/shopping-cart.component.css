@@ -166,3 +166,55 @@
     text-decoration: none;
     color: white;
   }
+
+
+    /* Breadcrumb Container */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      border-radius: 5px;
+  
+    }
+  
+    
+    .breadcrumb-link {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0275d8; /* Blue color for the link */
+      text-decoration: none; /* Remove underline from links */
+      transition: color 0.3s ease; /* Smooth transition on hover */
+    }
+
+
+/* Định kiểu cho các label và input trong cùng một dòng */
+.form-group {
+  display: flex;
+  justify-content: space-between; /* Đẩy label sang trái và input sang phải */
+  align-items: center;  /* Căn giữa theo chiều dọc */
+  margin-bottom: 15px;   /* Khoảng cách giữa các trường */
+}
+
+/* Định kiểu cho label */
+label {
+  font-weight: bold;
+  color: #495057;
+  margin-right: 10px;  /* Khoảng cách giữa label và input */
+  width: 40%;  /* Đặt chiều rộng cho label để căn chỉnh đều */
+  text-align: left;  /* Căn trái cho label */
+}
+
+/* Định kiểu cho input và select */
+input, select {
+  width: 55%;  /* Chiếm phần còn lại của container */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center; /* Căn phải cho input */
+}
+
+/* Tùy chọn: Định kiểu cho các trường input text và select */
+input[type="text"], input[type="tel"], select {
+  margin-bottom: 10px;  /* Khoảng cách dưới input */
+}

@@ -141,4 +141,104 @@
 }
 
 
+  /* Styling for the modal body */
+  .modal-body {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    color: #333;
+  }
   
+  /* Styling for form groups */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  /* Styling for labels */
+  /* label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+  } */
+  
+  /* Styling for inputs */
+  input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #333;
+    transition: border-color 0.3s ease;
+  }
+  
+  /* Focus effect on inputs */
+  input:focus, select:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Styling for placeholder text */
+  input::placeholder {
+    color: #aaa;
+  }
+  
+  /* Styling for small text (helper text) */
+  small {
+    display: block;
+    margin-top: 5px;
+    color: #888;
+    font-size: 12px;
+  }
+  
+  /* Styling for select dropdown */
+  select {
+    appearance: none;
+    background-color: #fff;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%204%205%27%3E%3Cpath%20fill%3D%27%23333%27%20d%3D%27M2%200L0%202h4z%27/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+    padding-right: 30px;
+  }
+  
+  /* Add hover and focus effect for select dropdown */
+  select:hover, select:focus {
+    cursor: pointer;
+    border-color: #007BFF;
+  }
+  
+  /* Add custom style for modal header or footer (optional) */
+  .modal-header{
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  /* Optional: Add some spacing inside the modal */
+  .modal {
+    padding: 20px;
+  }
+
+  /* Breadcrumb Container */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+
+  }
+
+  
+  .breadcrumb-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #0275d8; /* Blue color for the link */
+    text-decoration: none; /* Remove underline from links */
+    transition: color 0.3s ease; /* Smooth transition on hover */
+  }

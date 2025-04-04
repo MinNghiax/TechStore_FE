@@ -1,3 +1,8 @@
+<nav class="breadcrumb">
+    <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" [routerLink]="['/home/list']" [routerLinkActive]="'active-link'"> Trang Chủ </a> 
+    <label  style="font-size: small;" for="">  > Đơn hàng </label>
+  
+  </nav>
 <div class="outer-container">
     <div class="one">
         <div class="one-item">
@@ -43,7 +48,6 @@
                 </div>
                 <div class="menu-bar">
                     <div class="menu-bar-main">
-                        <a [routerLink]="['/home/order/listOrder']" [routerLinkActive]="'active-link'"><i class="fas fa-shopping-cart"></i> <p>Đơn hàng của tôi</p></a>
                         <a><i class="far fa-heart"></i> <p>Khách hàng thân thiết</p></a>
                         <a><i class="far fa-address-card"></i><p>Sổ địa chỉ nhận hàng</p></a>
                         <a (click)="logout()"><i class="fas fa-sign-out-alt" ></i><p>Đăng xuất</p></a>
@@ -65,14 +69,8 @@
                 <a>Trả hàng</a>
             </div>
           
-            <div class="twox">
-                <!-- Kiểm tra nếu không có dữ liệu chi tiết đơn hàng -->
-            <div *ngIf="!orderDetail || !orderDetail.id" class="no-data">
-                <p>No order details found. Please try again later.</p>
-              </div>
-            
-              <!-- Hiển thị thông tin chi tiết đơn hàng -->
-              <div *ngIf="orderDetail && orderDetail.id" class="order-detail">
+            <!-- <div class="twox">
+              <div class="order-item" *ngFor="let order of orders">
                 <div class="twoxx">
                     <p>{{this.create_at | date: 'dd-MM-yyyy'}}</p>
                     <p>{{this.number}} sản phẩm</p>
@@ -81,16 +79,16 @@
                 <div class="dt">
                    <div class="dt-pr">
                     <div class="anh">
-                        <img [src]="this.PathAnh" />    
+                        <img  (click)="viewOrderDetails(order.order_id)"  [src]="this.PathAnh" />
                     </div>
                     <div style="margin-top: 10px;">
                         <strong style="font-size: larger;">{{this.product_name}}</strong>
                         <br>
-                        <strong style="color: gray; font-size: medium;" >Số lượng: {{orderDetail.number_of_products}}</strong> 
+                        <strong style="color: gray; font-size: medium;" >Số lượng: {{this.number}}</strong> 
                     </div>
                    </div>
                     <div>
-                        <strong style="margin-top: 60px;"> {{orderDetail.total_money | currency:'USD'}}</strong>
+                        <strong style="margin-top: 60px;"> {{this.total_money | currency:'USD'}}</strong>
                         <br>
                         <label for="" style="margin-top: 20px; color: brown; font-weight: bold;">Thành tiền: {{this.total_money}}</label>
                     </div>                    
@@ -105,11 +103,66 @@
                 </div>              
               </div>
             </div>
+          </div> -->
+          <div class="twox">
+            <div class="order-item" *ngFor="let order of orders">
+              <div class="twoxx">
+                <p>{{ order.create_at | date: 'dd-MM-yyyy' }}</p>
+                <p>{{ this.number }} sản phẩm</p> 
+              </div>
+              <div class="dt">
+                <div class="dt-pr">
+                  <div style="margin-left: 40px; display: flex; gap: 40px;">
+                    <div class="anh">
+                      <img (click)="viewOrderDetails(this.orderDetail.order_id)" [src]="PathAnh + this.product.image_url" />
+                    </div>
+                    <div style="margin-top: 30px; width: 100px;">
+                      <strong style="font-size: larger;">{{ this.product.product_name }}</strong>
+                      <br />
+                      <strong style="color: gray; font-size: medium;">Số lượng: {{ this.number }}</strong>
+                    </div>
+                  </div>
+                </div>
+        
+              
+                <div class="tien" style="margin-left: 100px;">
+                  <strong style="margin-top: 60px;">{{ order.total_amount | currency: 'USD' }}</strong>
+                  <br />
+                  <label for="" style="margin-top: 20px; color: brown; font-weight: bold;">
+                    Thành tiền: {{ order.total_amount }}
+                  </label>
+                </div>
+              </div>
+              <div class="an">
+                <div>
+                  <label> Bạn cần hỗ trợ? Liên hệ ngay với chúng tôi. </label>
+                </div>
+                <div>
+                  <button>Hỗ trợ</button>
+                </div>
+              </div>
+            </div>
           </div>
+          
+          
+          <!-- <div class="order-container">
+            <div *ngIf="orders.length > 0; else noOrders">
+              <div *ngFor="let order of orders">
+                <h1>{{order.customer_id}}</h1>
+                <h1>{{order.order_id}}</h1>
+              </div>
+            </div> -->
+          
+            <ng-template #noOrders>
+              <p>No orders found for this customer.</p>
+            </ng-template>
+          </div>
+          
+          
 
     </div>
 </div>
 
 
 
-  
+

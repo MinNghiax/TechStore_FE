@@ -1,87 +1,104 @@
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs'; // Sử dụng BehaviorSubject
 
 @Injectable({
-    providedIn: 'root'
-  })
-
-export class shoppingCartService {
-  private apiUrl = 'http://localhost:5038/api';
-  readonly PhotosUrl = 'http://localhost:5038/Photos';
-
-  private httpOptions = {
-    headers: new HttpHeaders({
-      "Content-Type": 'application/json'
-    })
-  }
-
+  providedIn: 'root'  // Cung cấp dịch vụ toàn cục
+})
+export class ShoppingCartService {
   private cart: Map<number, number> = new Map(); // Dùng Map để lưu trữ giỏ hàng, key là id sản phẩm, value là số lượng
   private isBrowser: boolean;
+  private cartSubject = new BehaviorSubject<Map<number, number>>(this.cart); // Subject để phát giỏ hàng
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.refreshCart()
-    // debugger
     this.isBrowser = isPlatformBrowser(this.platformId);
-    // Lấy dữ liệu giỏ hàng từ localStorage khi khởi tạo service nếu đang chạy trên trình duyệt
     if (this.isBrowser) {
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        this.cart = new Map(JSON.parse(storedCart));
-      }
+      this.refreshCart(null); // Không có user_id lúc khởi tạo, giỏ hàng cho khách
     }
   }
 
-  addToCart(productId: number, quantity: number = 1): void {
+  // Thêm sản phẩm vào giỏ hàng
+  addToCart(productId: number, quantity: number = 1, user_id: number | null = null): void {
     console.log('Thêm vào giỏ hàng:', productId, quantity);
+
+    // Xác định cartKey theo user_id hoặc guest
+    const cartKey = this.getCartKey(user_id);
+
+    // Kiểm tra nếu sản phẩm đã có trong giỏ
     if (this.cart.has(productId)) {
+      // Nếu sản phẩm đã có trong giỏ, tăng số lượng
       this.cart.set(productId, this.cart.get(productId)! + quantity);
     } else {
+      // Nếu sản phẩm chưa có, thêm mới với số lượng
       this.cart.set(productId, quantity);
     }
-    this.saveCartToLocalStorage();
+
+    // Lưu giỏ hàng vào LocalStorage
+    this.saveCartToLocalStorage(cartKey);  
+    this.cartSubject.next(this.cart);  // Cập nhật giỏ hàng trong subject
     console.log('Giỏ hàng sau khi thêm:', Array.from(this.cart.entries()));
   }
 
+  // Trả về giỏ hàng dưới dạng Observable
+  // Trả về giỏ hàng dưới dạng Observable cho user_id hiện tại
+  getCart(user_id: number | null) {
+    const cartKey = this.getCartKey(user_id);  // Lấy cartKey cho user_id hoặc guest
+    const storedCart = localStorage.getItem(cartKey);
+    
+    if (storedCart) {
+      this.cart = new Map(JSON.parse(storedCart));  // Tải giỏ hàng từ localStorage
+    } else {
+      this.cart = new Map<number, number>();  // Nếu không có giỏ hàng, tạo mới giỏ hàng rỗng
+    }
 
-  getCart(): Map<number, number> {
-    return this.cart;
+    this.cartSubject.next(this.cart);  // Cập nhật giỏ hàng trong subject
+    return this.cartSubject.asObservable();  // Trả về Observable giỏ hàng
   }
 
-  setCart(cart: Map<number, number>) {
+
+  // Đặt lại giỏ hàng và lưu vào LocalStorage
+  setCart(cart: Map<number, number>, user_id: number | null = null): void {
     this.cart = cart ?? new Map<number, number>();
-    this.saveCartToLocalStorage();
+    const cartKey = this.getCartKey(user_id);
+    this.saveCartToLocalStorage(cartKey);
+    this.cartSubject.next(this.cart); // Cập nhật giá trị mới cho cartSubject
   }
 
-  // Lưu trữ giỏ hàng vào localStorage nếu đang chạy trên trình duyệt
-  private saveCartToLocalStorage(): void {
-    // debugger
+  // Lưu giỏ hàng vào LocalStorage
+  private saveCartToLocalStorage(cartKey: string): void {
     if (this.isBrowser) {
-      localStorage.setItem('cart', JSON.stringify(Array.from(this.cart.entries())));
+      localStorage.setItem(cartKey, JSON.stringify(Array.from(this.cart.entries())));
     }
   }
 
   // Hàm xóa dữ liệu giỏ hàng và cập nhật Local Storage
-  clearCart(): void {
+  clearCart(user_id: number | null = null): void {
     this.cart.clear(); // Xóa toàn bộ dữ liệu trong giỏ hàng
-    this.saveCartToLocalStorage(); // Lưu giỏ hàng mới vào Local Storage (trống) nếu đang chạy trên trình duyệt
+    const cartKey = this.getCartKey(user_id);  // Lấy cartKey cho user_id hoặc khách
+    this.saveCartToLocalStorage(cartKey); // Lưu giỏ hàng mới vào Local Storage (trống)
+    this.cartSubject.next(this.cart); // Cập nhật giỏ hàng rỗng
   }
 
-  private getCartKey():string {    
-    const userResponseJSON = localStorage.getItem('user'); 
-    const userResponse = JSON.parse(userResponseJSON!);  
-    debugger
-    return `cart:${userResponse?.id ?? ''}`;
-
+  // Lấy key giỏ hàng cho người dùng hiện tại (dựa vào id người dùng)
+  private getCartKey(user_id: number | null): string {
+    // Nếu có user_id thì dùng nó làm key, nếu không có thì trả về cart:guest
+    return user_id ? `cart:${user_id}` : 'cart:guest';
   }
 
-  public  refreshCart(){
-    const storedCart = localStorage.getItem(this.getCartKey());
+  // Cập nhật giỏ hàng từ localStorage
+  public refreshCart(user_id: number | null): void {
+    const cartKey = this.getCartKey(user_id);  // Lấy cartKey cho user_id hoặc khách
+    const storedCart = localStorage.getItem(cartKey);
     if (storedCart) {
-      this.cart = new Map(JSON.parse(storedCart));      
+      this.cart = new Map(JSON.parse(storedCart));
     } else {
       this.cart = new Map<number, number>();
     }
+    this.cartSubject.next(this.cart); // Cập nhật giá trị mới cho cartSubject
+  }
+
+  // Kiểm tra xem giỏ hàng có trống không
+  isCartEmpty(): boolean {
+    return this.cart.size === 0;
   }
 }

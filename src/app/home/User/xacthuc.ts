@@ -20,5 +20,7 @@ export class Xacthuc implements CanActivate {
       return false;
     }
   }
+
+  
 }
 

@@ -10,7 +10,7 @@ import { ReviewService } from '../../../Service/review-service';
 import { Reviews } from '../../../Models/reviews';
 import { User } from '../../../Models/users';
 import { userService } from '../../../Service/userService';
-import { shoppingCartService } from '../../../Service/shoppingCartService';
+import { ShoppingCartService } from '../../../Service/shoppingCartService';
 
 @Component({
   selector: 'app-detail-products',

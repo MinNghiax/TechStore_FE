@@ -1,3 +1,10 @@
+
+<nav class="breadcrumb">
+  <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" [routerLink]="['/home/list']" [routerLinkActive]="'active-link'"> Trang Chủ </a> 
+  <label  style="font-size: small;" for="">  > Giỏ hàng </label>
+
+</nav>
+
 <div class="shopping-cart">
 <div class="title">
   <div>
@@ -11,7 +18,7 @@
 </div>
 </div>
   <!-- Danh sách sản phẩm -->
-  <div *ngIf="cartItems.length > 0; else emptyCart">
+  <div *ngIf="cartItems.length > 0; ">
     <table class="cart-table">
       <thead>
         <tr>
@@ -28,7 +35,7 @@
           <td>{{ item.product.product_name }}</td>
           <td>
             <img 
-              [src]="this.PathAnh" 
+              [src]="item.PathAnh" 
               alt="{{ item.product.product_name }}" 
               class="product-image" 
             />
@@ -43,7 +50,8 @@
           <td>
             <button (click)="confirmDelete(i)">Xóa</button>
           </td>
-        </tr>
+        </tr>        
+        
       </tbody>
     </table>
 
@@ -53,13 +61,51 @@
     </div>
 
     <!-- Mã giảm giá -->
-    <div class="coupon-section">
-      <input 
+    <div style="text-align: right;" class="coupon-section">
+      <!-- <input 
         type="text" 
         [(ngModel)]="couponCode" 
         placeholder="Nhập mã giảm giá" 
-      />
-      <button (click)="applyCoupon()">Áp dụng</button>
+      /> -->
+      <button data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="themDon()">Thanh toán</button>
+      <!-- Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel" style="margin-left: 20px;">Thanh toán đơn hàng</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="margin-bottom: 20px;" (click)="dong()"></button>
+            </div>
+            <div class="modal-body">
+              <form #paymentForm="ngForm" (ngSubmit)="muaNgay(paymentForm)">
+                <div class="form-group">
+                  <label for="address">Địa chỉ</label>
+                  <input type="text" id="address" name="address" placeholder="Nhập địa chỉ giao hàng" required ngModel>
+                </div>
+          
+                <div class="form-group">
+                  <label for="phone" style="margin-right: 20px;">Số điện thoại</label>
+                  <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" pattern="[0-9]{10}" required ngModel>
+                </div>
+          
+                <div class="form-group">
+                  <label for="payment">Phương thức thanh toán</label>
+                  <select id="payment" name="payment" required ngModel>
+                    <option value="">Chọn một phương thức thanh toán</option>
+                    <option value="credit_card">Thanh toán bằng thẻ tín dụng</option>
+                    <option value="bank_transfer">Chuyển khoản</option>
+                    <option value="cash_on_delivery">Thanh toán khi nhận hàng</option>
+                  </select>
+                </div>
+          
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary" [disabled]="!paymentForm.valid">Đặt ngay</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+      </div>
     </div>
   </div>
 

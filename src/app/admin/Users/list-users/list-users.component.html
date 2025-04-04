@@ -16,7 +16,7 @@
         <form *ngIf="selected_user"  (ngSubmit)="suaUser()">
           <div class="mb-3">
             <label for="username" class="form-label">Tên</label>
-            <input type="text" class="form-control" id="username" [(ngModel)]="username" name="username" required>
+            <input type="text" class="form-control" id="username" [(ngModel)]="username" name="username" readonly>
           </div>
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>

@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { categoryService } from '../Service/categoryService';
 import { Product } from '../Models/product';
 import { Categories } from '../Models/categories';
+import { userService } from '../Service/userService';
 
 @Component({
   selector: 'app-home',
@@ -13,13 +14,14 @@ import { Categories } from '../Models/categories';
 })
 export class HomeComponent {
   constructor(private router : Router, private productService: ProductService, private route: ActivatedRoute,
-    private categoryService: categoryService
+    private categoryService: categoryService, private userService : userService
   ) {}
 
   searchText: string = '';
   products:Product[] = [];
   product:Product;
   DsDM : Categories[] = [];
+  user_id: number;
 
   ngOnInit(){
     //const Id = Number(this.route.snapshot.paramMap.get('id'));
@@ -44,12 +46,14 @@ export class HomeComponent {
      console.log("Vui lòng nhập từ khóa tìm kiếm.");
    }
  }
-
- goBack() {
-  this.router.navigate([`/home/list`]);   
 }
 
-goBack2() {
-  this.router.navigate([`/admin/index`]); 
-}
-}
+
+
+//  goBack() {
+//   this.router.navigate([`/home/list`]);   
+// }
+
+// goBack2() {
+//   this.router.navigate([`/admin/index`]); 
+// }

@@ -10,7 +10,7 @@ import { ReviewService } from '../../../Service/review-service';
 import { Reviews } from '../../../Models/reviews';
 import { User } from '../../../Models/users';
 import { userService } from '../../../Service/userService';
-import { shoppingCartService } from '../../../Service/shoppingCartService';
+import { ShoppingCartService } from '../../../Service/shoppingCartService';
 
 @Component({
   selector: 'app-detail-product',
@@ -49,8 +49,8 @@ export class DetailProductComponent {
     private route: ActivatedRoute, private router:Router,
     private orderDetailService: OrderDetailService,
     private reviewService: ReviewService,
-    private userService:userService,
-    private shoppingcartService : shoppingCartService
+    public userService:userService,
+    private shoppingcartService : ShoppingCartService
   ) {}
 
   ngOnInit() {
@@ -65,14 +65,14 @@ export class DetailProductComponent {
     this.loadUser(this.customer_id);
 
     // Lấy thông tin người dùng và gán customer_id
-  const currentUser = this.userService.getCurrentUser();  
-  if (currentUser) {
-    this.user_id = currentUser.user_id;  
-    this.customer_name = currentUser.username;
-  } else {
-    console.log('Không có người dùng đăng nhập');
-    
-  }
+    const currentUser = this.userService.getCurrentUser();  
+    if (currentUser) {
+      this.user_id = currentUser.user_id;  
+      this.customer_name = currentUser.username;
+    } else {
+      console.log('Không có người dùng đăng nhập');
+      
+    }
   }
 
 
@@ -196,33 +196,36 @@ export class DetailProductComponent {
 
 
 
-
-  themDon(){
-    this.order={
-      order_id:0,
-      customer_id:0,
-      order_status: "",
-      create_at: null,
-      total_amount: 0
+  themDon() {
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    const currentUser = this.userService.getCurrentUser();
+    
+    if (!currentUser) {
+      // Nếu chưa đăng nhập, yêu cầu người dùng đăng nhập và điều hướng đến trang đăng nhập
+      alert('Vui lòng đăng nhập để tiếp tục đặt hàng.');
+      this.router.navigate(['/home/login']); // Điều hướng đến trang đăng nhập
+      return; // Dừng lại và không hiển thị form đặt hàng
+    } else{
+      // Nếu đã đăng nhập, tiếp tục xử lý đặt hàng
+      this.user_id = currentUser.user_id;  // Lấy user_id của người dùng đã đăng nhập
+      this.customer_name = currentUser.username; // Lấy tên người dùng nếu cần
+      
+      // Khởi tạo đơn hàng mới
+      this.order = {
+        order_id: 0,
+        customer_id: this.user_id, // Gán user_id cho đơn hàng
+        order_status: 'Đang xử lý',  // Cập nhật trạng thái đơn hàng ban đầu
+        create_at: new Date(),  // Thời gian tạo đơn hàng
+        total_amount: 0  // Tổng tiền mặc định (sẽ tính toán sau)
+    };
+  
+    this.dangThemSua = true;  // Thiết lập flag để mở form thêm đơn hàng
     }
-    this.dangThemSua=true;
-    // this.tieude="Thêm Tour";
+  
+    
   }
 
-  // muaNgay(){
-  //   var val= {
-  //     order_id:this.order_id,
-  //     customer_id: this.customer_id,
-  //     order_status: this.order_status,
-  //     create_at:this.create_at,
-  //     total_amount:this.total_amount,
-  //   };
-  //   this.orderService.postOrder(val).subscribe(res =>{
-  //     alert('Thêm thành công');
-  //   });
-  // }
-
-  muaNgay() {
+  muaNgay(paymentForm: any) {
     // Tính tổng tiền cho chi tiết đơn hàng
     this.total_money = this.price * this.number_of_products;
   
@@ -253,7 +256,7 @@ export class DetailProductComponent {
         // Gửi yêu cầu tạo chi tiết đơn hàng
         this.orderDetailService.postOrderDetail(orderDetailData).subscribe({
           next: () => {
-            alert('Thêm đơn hàng và chi tiết đơn hàng thành công.');
+            alert('Đặt hàng thành công.');
             console.log('Dữ liệu gửi đến API:', orderDetailData);
           },
           error: (err) => {
@@ -272,23 +275,30 @@ export class DetailProductComponent {
 
   dong(){
     this.dangThemSua=false;
-    // this.layDSTour();
   }
 
-   
   addToCart(): void {
-    
     if (this.product) {
-      this.shoppingcartService.addToCart(this.product.product_id);
-      this.isPressedAddToCart = true;
-      this.router.navigate(['/home/product/carts']);
-      alert("Thêm sản phẩm vào giỏ hàng thành công.")
+      // Lấy user_id từ userService
+      const currentUser = this.userService.getCurrentUser();
+      let user_id: number | null = null;
+
+      if (currentUser) {
+        user_id = currentUser.user_id;
+      }
+
+      if (user_id) {
+        // Thêm sản phẩm vào giỏ hàng với user_id
+        this.shoppingcartService.addToCart(this.product.product_id, 1, user_id);
+        console.log("user_id",this.user_id);
+        this.isPressedAddToCart = true;
+        this.router.navigate(['/home/product/carts']);
+        alert("Thêm sản phẩm vào giỏ hàng thành công.");
+      } else {
+        console.error('Không thể thêm sản phẩm vào giỏ hàng vì không có user_id.');
+      }
     } else {
-      // Xử lý khi product là null
       console.error('Không thể thêm sản phẩm vào giỏ hàng vì product là null.');
     }
   }
-
-
-
 }

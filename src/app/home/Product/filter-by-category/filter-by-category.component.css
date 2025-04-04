@@ -22,7 +22,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
   transition: all 0.3s ease; 
   height: 440px;
-  width: 300px; 
+  width: 200px; 
   overflow: hidden;
 }
 .product-item:hover {
@@ -162,8 +162,7 @@
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
   transition: all 0.3s ease; 
-  height: 440px;
-  width: 300px; 
+  height: 400px;
   text-align: center;
 }
 .product-item:hover {
@@ -244,16 +243,22 @@
   cursor: not-allowed;
 }
 
-
-/* Consistent layout for product list */
+.product-items{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Khoảng cách giữa các sản phẩm */
+}
 .product-item {
+  flex: 1;
   border: 1px solid #ddd;
   border-radius: 8px;
-  width: calc(25% - 15px); /* Adjust width to ensure a grid layout */
   padding: 15px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
+  width: 300px; /* Hoặc thay đổi theo nhu cầu của bạn */
+  height: 450px;
+  flex-shrink: 0; /* Đảm bảo sản phẩm không bị co lại khi không đủ không gian */
 }
 
 .product-item:hover {
@@ -281,5 +286,27 @@
   margin: 0 10px;
 }
 
+
+  
+  /* Breadcrumb Container */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+
+  }
+
+  
+  .breadcrumb-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #0275d8; /* Blue color for the link */
+    text-decoration: none; /* Remove underline from links */
+    transition: color 0.3s ease; /* Smooth transition on hover */
+  }
+
+
+  
 
   

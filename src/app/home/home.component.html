@@ -26,7 +26,7 @@
 
         <!-- Giỏ hàng -->
         <div class="cart">
-            <button id="cart-btn">
+            <button id="cart-btn" >                
                 <!-- <i class="fa fa-cart-plus"></i> -->
                 <a [routerLink]="['/home/product/carts']" [routerLinkActive]="'active-link'">Giỏ hàng</a>
                 <!-- <span class="cart-count">0</span> -->
@@ -67,11 +67,10 @@
     </div>
 </div>
 
-<nav class="breadcrumb">
+<!-- <nav class="breadcrumb">
     <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" (click)="goBack()"> Trang Chủ</a>
-     <!-- <span class="breadcrumb-separator"> > </span> -->
      <label style="font-size: small;" for=""> > Danh sách sản phẩm</label>
-</nav>
+</nav> -->
     <div>
         <router-outlet></router-outlet>
     </div>

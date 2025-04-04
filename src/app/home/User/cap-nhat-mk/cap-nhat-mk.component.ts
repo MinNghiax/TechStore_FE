@@ -66,7 +66,7 @@ export class CapNhatMKComponent implements OnInit {
   
     // Kiểm tra xem mật khẩu mới có giống mật khẩu cũ không
     if (this.oldPassword === this.newPassword) {
-      alert('Mật khẩu mới không hợp lệ.');
+      alert('Mật khẩu không đúng! Vui lòng nhập lại.');
       return;
     }
   

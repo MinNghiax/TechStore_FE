@@ -167,12 +167,12 @@
 }
 
 /* Styling for labels */
-label {
+/* label {
   display: block;
   font-weight: bold;
   margin-bottom: 8px;
   color: #555;
-}
+} */
 
 /* Styling for inputs */
 input, select {
@@ -223,7 +223,7 @@ select:hover, select:focus {
 }
 
 /* Add custom style for modal header or footer (optional) */
-.modal-header, .modal-footer {
+.modal-header{
   padding: 15px;
   background-color: #f7f7f7;
   border-top-left-radius: 10px;
@@ -258,3 +258,24 @@ select:hover, select:focus {
 width: 100px;
 border-radius: 8px;
 }
+
+
+
+  /* Breadcrumb Container */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+
+  }
+
+  
+  .breadcrumb-link {
+    font-size: 16px;
+    font-weight: 500;
+    color: #0275d8; /* Blue color for the link */
+    text-decoration: none; /* Remove underline from links */
+    transition: color 0.3s ease; /* Smooth transition on hover */
+  }
+

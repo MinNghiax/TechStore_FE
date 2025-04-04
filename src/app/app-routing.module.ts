@@ -48,7 +48,7 @@ import { CreateUsersComponent } from './admin/Users/create-users/create-users.co
 const routes: Routes = [
 
 
- // { path: '', redirectTo: '/home/list', pathMatch: 'full' }, // Route mặc định
+  { path: '', redirectTo: '/home/list', pathMatch: 'full' }, // Route mặc định
 
   { path: 'home', component: HomeComponent, children: [
     { path: '', redirectTo: 'list', pathMatch: 'full' }, // Route mặc định của home
@@ -59,8 +59,6 @@ const routes: Routes = [
     { path: 'product/search', component: ListProductComponent}, 
     { path: 'product/detail/:product_id', component: DetailProductComponent },
     { path: 'user/register', component: RegisterComponent },
-
-
 
     
   
@@ -73,7 +71,7 @@ const routes: Routes = [
     { path: 'user/updatePW/:id', component: CapNhatMKComponent },
     { path: 'user/updateUser/:id', component: CapNhatUserComponent },
     { path: 'user/viewOH/:id', component: ViewOrderHistoryComponent },
-    { path: 'product/shopping-cart', component: ShoppingCartComponent },
+    // { path: 'product/shopping-cart', component: ShoppingCartComponent },
     { path: 'product/reviews', component: ReviewsComponent },
     { path: 'product/carts', component: ShoppingCartComponent }
     

@@ -70,4 +70,23 @@
     margin: 30px 30px;
     border-radius: 8px;
   }
+
+
+    /* Breadcrumb Container */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      border-radius: 5px;
+  
+    }
+  
+    
+    .breadcrumb-link {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0275d8; /* Blue color for the link */
+      text-decoration: none; /* Remove underline from links */
+      transition: color 0.3s ease; /* Smooth transition on hover */
+    }
   
