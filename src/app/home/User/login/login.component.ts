@@ -1,88 +1,90 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { userService } from '../../../Service/userService';
-import { User } from '../../../Models/users'; 
+import { User } from '../../../Models/users';
 import { Router } from '@angular/router';
-import { ShoppingCartService } from '../../../Service/shoppingCartService';
+
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   username = '';
   password = '';
   message = '';
-  user: User | null = null;  // Initialize user as null
+  user: User | null = null;
 
-  constructor(private userService: userService, private router: Router, private shoppingCartService : ShoppingCartService) {}
+  constructor(
+    private userService: userService,
+    private router: Router,
+
+  ) { }
+
+  ngOnInit(): void {
+    const middle = window.innerHeight / 2;
+    window.scrollTo({ top: middle, behavior: 'smooth' });
+  }
+
 
   Login() {
-    // Tạo đối tượng yêu cầu đăng nhập tương ứng với cấu trúc backend
-    const loginRequest = { 
-      Username: this.username, 
-      Password: this.password 
+    const loginRequest = {
+      Username: this.username,
+      Password: this.password
     };
-  
-    // Gọi login service để gửi yêu cầu POST
-    this.userService.login(loginRequest).subscribe(
-      response => {
-        console.log('Login Response:', response);  // Kiểm tra phản hồi để đảm bảo dữ liệu hợp lệ
-        if (response.Success) {
-          // Kiểm tra nếu response.user tồn tại và là một đối tượng hợp lệ
-          if (response.User && typeof response.User === 'object') {
-            this.user = response.User;  // Gán đối tượng user
-            console.log("Login successful");
-            console.log('User Data:', this.user);  // Kiểm tra dữ liệu người dùng
-  
-            // Đảm bảo role_id là một số (chuyển đổi nếu nó là chuỗi)
-            const roleId = Number(this.user.role_id);  // Đảm bảo role_id là một số
-            this.userService.setCurrentUser(this.user);  // Lưu thông tin người dùng
-  
-            // Phân biệt theo roleId
-            if (roleId === 1) {
-              this.message = 'Đăng nhập thành công với quyền Admin';
-              this.router.navigate(['/admin/index']); // Điều hướng đến trang admin
-            } else if (roleId === 2) {
-              this.message = 'Đăng nhập thành công với quyền User';
-              this.router.navigate(['/home/list']); // Điều hướng đến trang user
-            } else {
-              this.message = 'Lỗi: role_id không hợp lệ';
-            }
-  
-            // Lưu thông tin người dùng trong localStorage
-            localStorage.setItem('user', JSON.stringify(this.user)); // Lưu thông tin người dùng
-  
-            
-  
-          } else {
-            this.message = 'Dữ liệu người dùng không hợp lệ';
-          }
-        } else {
+
+    this.userService.login(loginRequest).subscribe({
+      next: (response) => {
+        console.log('Login Response:', response);
+
+        if (!response.Success) {
           this.message = response.message || 'Đăng nhập thất bại.';
+          return;
+        }
+
+        const user = response.User;
+        if (!user || typeof user !== 'object') {
+          this.message = 'Dữ liệu người dùng không hợp lệ';
+          return;
+        }
+
+        // ✅ Lưu thông tin user
+        this.user = user;
+        this.userService.setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        const roleId = Number(user.role_id);
+        switch (roleId) {
+          case 1:
+            this.message = 'Đăng nhập thành công với quyền Admin';
+            this.router.navigate(['/admin/index']);
+            break;
+          case 2:
+            this.message = 'Đăng nhập thành công với quyền User';
+            this.router.navigate(['/home/list']);
+            break;
+          default:
+            this.message = 'Lỗi: role_id không hợp lệ';
         }
       },
-      error => {
-        console.error('Login error', error);
+      error: (err) => {
+        console.error('Login error:', err);
         this.message = 'Đăng nhập thất bại. Vui lòng thử lại.';
         alert('Tên người dùng hoặc mật khẩu sai, vui lòng nhập lại!');
       }
-    );
+    });
   }
-  
-  
-  
+
 
   logout() {
     this.userService.logout().subscribe(
       response => {
         if (response.success) {
           this.message = response.message || 'Đăng xuất thành công.';
-          // Clear user data from localStorage or sessionStorage
           localStorage.removeItem('user');
-          this.user = null; // Clear user state in component
-          this.router.navigate(['/login']); // Redirect to login page
+          this.user = null;
+          this.router.navigate(['/login']);
         } else {
           this.message = response.message || 'Đăng xuất thất bại.';
         }

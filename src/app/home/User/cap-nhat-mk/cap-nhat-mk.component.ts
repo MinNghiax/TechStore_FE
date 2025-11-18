@@ -24,15 +24,13 @@ export class CapNhatMKComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.userId = +params['id'];  // Lấy userId từ URL
+      this.userId = +params['id'];
     });
     this.loadUserData();
 
     this.oldPassword = '';
     this.newPassword = '';
     this.confirmPassword = '';
-
-    //this.updatePassword();
   }
 
   loadUserData(): void {
@@ -51,48 +49,38 @@ export class CapNhatMKComponent implements OnInit {
   }
 
   updatePassword(): void {
-  
-    // Kiểm tra xem người dùng đã nhập đầy đủ các trường không
     if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
       alert('Vui lòng nhập các trường.');
       return;
     }
   
-    // Kiểm tra mật khẩu mới và mật khẩu xác nhận có khớp không
     if (!this.isPasswordsMatch()) {
-      alert('Mật khẩu mới không hợp lệ.');
+      alert('Mật khẩu mới hoặc xác nhận mật khẩu mới không hợp lệ.');
       return;
     }
   
-    // Kiểm tra xem mật khẩu mới có giống mật khẩu cũ không
     if (this.oldPassword === this.newPassword) {
-      alert('Mật khẩu không đúng! Vui lòng nhập lại.');
+      alert('Mật khẩu mới trùng với mật khẩu cũ! Vui lòng nhập lại.');
       return;
     }
   
-    // Gửi request update mật khẩu
     const updatePasswordRequest = {
       CurrentPassword: this.oldPassword,
       NewPassword: this.newPassword
     };
   
-    // Sử dụng API để cập nhật mật khẩu
     this.userservice.updatePassword(this.userId, updatePasswordRequest).subscribe(
       (response) => {
         alert('Cập nhật mật khẩu thành công.');
 
         this.loadUserData();
-
-       // Kiểm tra nếu this.user có giá trị trước khi truy cập role_id
        if (this.user && this.user.role_id !== undefined) {
-        const roleId = Number(this.user.role_id); // Ensure role_id is a number
-
-        // Differentiate based on user role (role_id)
+        const roleId = Number(this.user?.role_id);
         if (roleId === 1) {
           console.log(roleId);
-          this.router.navigate(['/admin/index']); // Navigate to admin page
+          this.router.navigate(['/admin/index']);
         } else if (roleId === 2) {
-          this.router.navigate(['/home/list']); // Navigate to user page
+          this.router.navigate(['/home/list']);
         }
       } else {
         console.error('User or role_id is undefined');

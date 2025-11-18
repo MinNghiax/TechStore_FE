@@ -1,220 +1,267 @@
-/* Tổng thể giao diện giỏ hàng */
+/* ====== Cơ bản ====== */
 .shopping-cart {
-    max-width: 1000px;
-    margin: 20px auto;
-    padding: 30px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-  }
-  
-  .shopping-cart h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
-    color: #333;
-  }
-  
-  /* Bảng giỏ hàng */
-  .cart-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-  }
-  
-  .cart-table th,
-  .cart-table td {
-    padding: 15px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .cart-table th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-  }
-  
-  .cart-table img.product-image {
-    max-width: 100px;
-    height: auto;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-  }
-  
-  .cart-table button {
-    padding: 8px 16px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: #fff;
-    transition: background-color 0.3s;
-  }
-  
-  .cart-table button:hover {
-    background-color: #0056b3;
-  }
-  
-  .cart-table button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  /* Tổng tiền */
-  .total-section {
-    text-align: right;
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 20px;
-    color: #333;
-  }
-  
-  /* Mã giảm giá */
-  .coupon-section {
-    margin-top: 20px;
-    text-align: center;
-  }
-  
-  .coupon-section input {
-    padding: 12px;
-    font-size: 16px;
-    width: 70%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-right: 10px;
-  }
-  
-  .coupon-section button {
-    padding: 12px 24px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #28a745;
-    color: #fff;
-    transition: background-color 0.3s;
-  }
-  
-  .coupon-section button:hover {
-    background-color: #218838;
-  }
-  
-  /* Giỏ hàng trống */
-  .ng-template p {
-    text-align: center;
-    font-size: 18px;
-    color: #666;
-  }
-  
-  /* Liên kết xem lịch sử đơn hàng */
-  .view-all-orders {
-    margin-top: 30px;
-    text-align: center;
-  }
-  
-  .view-all-orders a {
-    font-size: 16px;
-    font-weight: bold;
-    color: #007bff;
-    text-decoration: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    background-color: #f0f8ff;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .view-all-orders a:hover {
-    background-color: #007bff;
-    color: white;
-    transform: scale(1.05);
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .cart-table th,
-    .cart-table td {
-      font-size: 14px;
-      padding: 12px;
-    }
-  
-    .coupon-section input,
-    .coupon-section button {
-      width: 100%;
-      margin-top: 10px;
-    }
-  
-    .total-section {
-      font-size: 18px;
-    }
-  }
-  .title{
-    display: flex; 
-    align-items: center; 
-    gap: 500px; 
-  }
-  .title button{
-    margin-bottom: 30px;
-    border-radius: 10px;
-    padding: 8px 8px;
-    background-color: #64dbeb;
-    border: none;
-  }
-  .title button a{
-    text-decoration: none;
-    color: white;
-  }
+  font-family: "Roboto", sans-serif;
+  padding: 30px;
+  background-color: #f0f8ff; /* xanh da trời rất nhạt */
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 1200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-
-    /* Breadcrumb Container */
-    .breadcrumb {
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      border-radius: 5px;
-  
-    }
-  
-    
-    .breadcrumb-link {
-      font-size: 16px;
-      font-weight: 500;
-      color: #0275d8; /* Blue color for the link */
-      text-decoration: none; /* Remove underline from links */
-      transition: color 0.3s ease; /* Smooth transition on hover */
-    }
-
-
-/* Định kiểu cho các label và input trong cùng một dòng */
-.form-group {
+.title {
   display: flex;
-  justify-content: space-between; /* Đẩy label sang trái và input sang phải */
-  align-items: center;  /* Căn giữa theo chiều dọc */
-  margin-bottom: 15px;   /* Khoảng cách giữa các trường */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-/* Định kiểu cho label */
-label {
-  font-weight: bold;
-  color: #495057;
-  margin-right: 10px;  /* Khoảng cách giữa label và input */
-  width: 40%;  /* Đặt chiều rộng cho label để căn chỉnh đều */
-  text-align: left;  /* Căn trái cho label */
+.title h1 {
+  color: #007acc;
+  font-size: 28px;
 }
 
-/* Định kiểu cho input và select */
-input, select {
-  width: 55%;  /* Chiếm phần còn lại của container */
-  padding: 8px 12px;
-  border: 1px solid #ccc;
+.title button {
+  background-color: #e0f0ff;
+  color: #007acc;
+  border: 1px solid #000000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.title button:hover {
+  background-color: #30994f;
+  color: white;
+}
+
+/* ====== Bảng ====== */
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.cart-table th,
+.cart-table td {
+  border: 1px solid #cce7ff;
+  padding: 12px;
+  text-align: center;
+}
+
+.cart-table th {
+  background-color: #d9efff;
+  color: #003d66;
+}
+
+.product-image {
+  width: 70px;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* ====== Nút số lượng ====== */
+.cart-table button {
+  background-color: #cce7ff;
+  color: #003d66;
+  border: none;
+  padding: 5px 10px;
+  margin: 0 4px;
   border-radius: 4px;
-  font-size: 14px;
-  text-align: center; /* Căn phải cho input */
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-/* Tùy chọn: Định kiểu cho các trường input text và select */
-input[type="text"], input[type="tel"], select {
-  margin-bottom: 10px;  /* Khoảng cách dưới input */
+.cart-table .btn-outline-secondary:hover {
+  background-color: #007acc;
+  color: white;
+}
+
+.cart-table .btn-danger:hover {
+  background-color: #ff3131;
+  color: white;
+}
+
+/* ====== Tổng tiền ====== */
+.total-section {
+  text-align: right;
+  font-size: 20px;
+  font-weight: bold;
+  color: #003d66;
+  margin-bottom: 20px;
+}
+
+/* ====== Nút Thanh Toán ====== */
+.coupon-section button {
+  background-color: #c5f7c5; /* xanh lá nhạt */
+  color: #006600;
+  padding: 10px 20px;
+  border: 1px solid #7ccf7c;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.coupon-section button:hover {
+  background-color: #6bd36b;
+  color: white;
+}
+
+/* ====== Modal ====== */
+.modal-content {
+  background-color: #f8fbff;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.modal-header {
+  border-bottom: 1px solid #d0e7ff;
+}
+
+.modal-title {
+  color: #007acc;
+}
+
+.modal-body table th {
+  background-color: #d9efff;
+  color: #003d66;
+}
+
+.modal-body table td {
+  text-align: center;
+}
+
+/* ====== Form ====== */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+  color: #003d66;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #aad4f7;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007acc;
+  box-shadow: 0 0 5px rgba(0, 122, 204, 0.4);
+}
+
+/* ====== Nút Đặt Ngay trong Modal ====== */
+.modal-footer button[type="submit"] {
+  background-color: #c5f7c5;
+  color: #006600;
+  padding: 10px 20px;
+  border: 1px solid #7ccf7c;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.modal-footer button[type="submit"]:hover {
+  background-color: #6bd36b;
+  color: white;
+}
+
+/* ====== Breadcrumb ====== */
+.breadcrumb {
+  margin: 15px 50px;
+  font-size: 14px;
+}
+
+.breadcrumb a {
+  color: #007acc;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+  color: #005999;
+}
+
+#btn-delete:hover {
+  background-color: rgb(255, 111, 111);
+}
+
+/* ====== Form trong Modal ====== */
+.modal-body form {
+  margin-top: 20px;
+}
+
+.modal-body form div {
+  margin-bottom: 15px;
+}
+
+.modal-body form label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+  color: #003d66;
+}
+
+.modal-body form input,
+.modal-body form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #aad4f7;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+.modal-body form input:focus,
+.modal-body form select:focus {
+  border-color: #007acc;
+  box-shadow: 0 0 5px rgba(0, 122, 204, 0.4);
+}
+
+.modal-body form button[type="submit"],
+.modal-body form button[type="button"] {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: 0.3s;
+}
+
+.modal-body form button[type="submit"] {
+  background-color: #c5f7c5;
+  color: #006600;
+  border: 1px solid #7ccf7c;
+}
+
+.modal-body form button[type="submit"]:hover {
+  background-color: #6bd36b;
+  color: white;
+}
+
+.modal-body form button[type="button"] {
+  background-color: #ffdede;
+  color: #cc0000;
+  border: 1px solid #ffaaaa;
+}
+
+.modal-body form button[type="button"]:hover {
+  background-color: #ff9999;
+  color: white;
 }

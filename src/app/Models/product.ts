@@ -5,6 +5,7 @@ export class Product {
     category_id: number;
     price: number;
     quantity: number;
+    description: string;
     image_url: string;
     PathAnh: string;
 }

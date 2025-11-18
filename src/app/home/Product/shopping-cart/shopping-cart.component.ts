@@ -1,228 +1,250 @@
 import { Component, OnInit } from '@angular/core';
-import { ShoppingCartService } from '../../../Service/shoppingCartService'; 
 import { Product } from '../../../Models/product';
 import { ProductService } from '../../../Service/productService';
-import { userService } from '../../../Service/userService'; 
-import { map, forkJoin } from 'rxjs';
-import { User } from '../../../Models/users';
+import { userService } from '../../../Service/userService';
 import { Order } from '../../../Models/order';
 import { OrderService } from '../../../Service/order-service';
 import { OrderDetailService } from '../../../Service/order-detail-service';
+import { CartService, CartItem } from '../../../Service/cart.service';
+import { forkJoin, map, catchError, of } from 'rxjs';
+import { Router } from '@angular/router';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-shopping-cart',
   templateUrl: './shopping-cart.component.html',
-  styleUrls: ['./shopping-cart.component.css'] 
+  styleUrls: ['./shopping-cart.component.css'],
 })
-
 export class ShoppingCartComponent implements OnInit {
-  cartItems: any[] = [];  // Dùng kiểu any[] thay vì một kiểu cụ thể
-  couponCode: string = ''; // Mã giảm giá
-  totalAmount: number = 0; // Tổng tiền
-  cart: Map<number, number> = new Map();
-  user_id: number;
-
-  order_id: number;
-    customer_id: number;
-    order_status: string = "Đang xử lý";
-    create_at: Date;
-    total_amount: number;
-    order: Order;
-    product_id : number;
-    price: number;
-    number_of_products: number =1;
-    total_money: number;
-    user:User;
-    customer_name:string;
-    dangThemSua:boolean= false;
-
-    product : Product;
+  cartItems: any[] = [];
+  totalAmount: number = 0;
+  user_id: number | null = null;
+  selectedItems: any[] = [];
+  dangThemSua: boolean = false;
+  bankInfo: string | null = null;
+  transferInstructions: string | null = null;
+  qrCodeUrl: string = 'assets/img/maQR2.jpg';
+  showSuccessMessage: boolean = false;
+  errorMessage: string | null = null;
+  isBanking: boolean = false;
 
   constructor(
     private productService: ProductService,
-    private userService: userService, 
-    private shoppingCartService: ShoppingCartService ,
-    private orderService : OrderService,
-    private orderDetailService : OrderDetailService
+    private userService: userService,
+    private cartService: CartService,
+    private orderService: OrderService,
+    private orderDetailService: OrderDetailService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    const currentUser = this.userService.getCurrentUser();
-    
-    if (currentUser) {
-      this.user_id = currentUser.user_id;
-    } else {
-      console.error('Người dùng chưa đăng nhập!');
-      alert("Vui lòng đăng nhập!!!");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const userIdString = this.userService.getUserId();
+    this.user_id = userIdString ? +userIdString : null;
+    if (!this.user_id) {
+      this.errorMessage = 'Vui lòng đăng nhập!';
+      this.router.navigate(['/home/login']);
       return;
     }
+    this.loadCart();
+  }
 
-    // Lấy danh sách sản phẩm từ giỏ hàng của người dùng
-    this.shoppingCartService.getCart(this.user_id).subscribe({
-      next: (cart) => {
-        const productIds: number[] = Array.from(cart.keys());
-
-        if (productIds.length === 0) {
-          return; // Không có sản phẩm trong giỏ hàng
-        }
-
-        
-
-        // Tạo danh sách các observable để gọi các API sản phẩm
-        const productRequests = productIds.map((productId) =>
-          this.productService.getProductDetails(productId).pipe(
-            map(product => ({
+  loadCart() {
+    this.cartService.getCartsByUserId(this.user_id!).subscribe({
+      next: (carts) => {
+        const productRequests = carts.map((cartItem) =>
+          this.productService.getProductDetails(cartItem.product_id).pipe(
+            map((product) => ({
+              cart_id: cartItem.cart_id,
               product: product,
-              quantity: cart.get(productId)!,
-              PathAnh: this.productService.PhotosUrl + "/" + product.image_url, // Gán đường dẫn ảnh vào mỗi sản phẩm
-               // Gán thông tin chi tiết sản phẩm
-              product_id : product.product_id, // ID sản phẩm
-              price : product.price,          // Giá sản phẩm
-              total_amount : product.price   // Tổng tiền mặc định bằng giá sản phẩm 
+              quantity: cartItem.quantity,
+              PathAnh: product.image_url
+                ? this.productService.PhotosUrl + '/' + product.image_url
+                : 'assets/images/default-image.jpg',
+              product_id: product.product_id,
+              price: product.price,
+              total_amount: product.price * cartItem.quantity,
+              selected: false,
             }))
           )
         );
-
-        // Dùng forkJoin để chờ tất cả các yêu cầu hoàn thành
         forkJoin(productRequests).subscribe({
           next: (results) => {
-            // Cập nhật cartItems sau khi lấy được thông tin sản phẩm
             this.cartItems = results;
-            this.calculateTotal(); // Tính tổng sau khi tất cả yêu cầu hoàn thành
+            this.calculateTotal();
           },
-          error: (error) => {
-            console.error('Lỗi khi lấy thông tin sản phẩm:', error);
-          }
+          error: () => (this.errorMessage = 'Không thể tải giỏ hàng!'),
         });
       },
-      error: (error) => {
-        console.error('Lỗi khi lấy giỏ hàng:', error);
-      }
+      error: () => (this.errorMessage = 'Không thể tải giỏ hàng!'),
     });
-
-    
   }
-
-   
 
   decreaseQuantity(index: number): void {
     if (this.cartItems[index].quantity > 1) {
       this.cartItems[index].quantity--;
-      this.updateCartFromCartItems();
-      this.calculateTotal();
+      this.updateQuantity(this.cartItems[index]);
     }
   }
 
   increaseQuantity(index: number): void {
     this.cartItems[index].quantity++;
-    this.updateCartFromCartItems();
-    this.calculateTotal();
+    this.updateQuantity(this.cartItems[index]);
   }
 
-  // Hàm tính tổng tiền
+  updateQuantity(item: any): void {
+    const updatedItem: CartItem = {
+      cart_id: item.cart_id,
+      user_id: this.user_id!,
+      product_id: item.product.product_id,
+      quantity: item.quantity,
+    };
+    this.cartService.updateCart(item.cart_id, updatedItem).subscribe({
+      next: () => this.loadCart(),
+      error: () => (this.errorMessage = 'Cập nhật số lượng thất bại!'),
+    });
+  }
+
   calculateTotal(): void {
-    this.totalAmount = this.cartItems.reduce(
+    this.selectedItems = this.cartItems.filter((item) => item.selected);
+    this.totalAmount = this.selectedItems.reduce(
       (total, item) => total + item.product.price * item.quantity,
       0
     );
   }
 
-  applyCoupon(): void {
-      // Viết mã xử lý áp dụng mã giảm giá ở đây
-  }
-
   confirmDelete(index: number): void {
-    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      this.cartItems.splice(index, 1);
-      this.updateCartFromCartItems();
-      this.calculateTotal();
+    if (confirm('Bạn có chắc chắn muốn xóa?')) {
+      this.cartService.deleteCart(this.cartItems[index].cart_id).subscribe({
+        next: () => this.loadCart(),
+        error: () => (this.errorMessage = 'Xóa sản phẩm thất bại!'),
+      });
     }
-
-    // Cập nhật lại giỏ hàng trong localStorage
-    this.shoppingCartService.setCart(this.cart, this.user_id);
   }
 
-  private updateCartFromCartItems(): void {
-    this.cart.clear();
-    this.cartItems.forEach((item) => {
-      this.cart.set(item.product.product_id, item.quantity);
-    });
-    this.shoppingCartService.setCart(this.cart);
+  toggleSelectAll(event: any): void {
+    this.cartItems.forEach((item) => (item.selected = event.target.checked));
+    this.calculateTotal();
   }
 
-  themDon(){
-    this.order={
-      order_id:0,
-      customer_id:0,
-      order_status: "",
-      create_at: null,
-      total_amount: 0
+  themDon(): void {
+    this.calculateTotal();
+    if (this.selectedItems.length === 0) {
+      this.errorMessage = 'Vui lòng chọn sản phẩm!';
+      return;
     }
-    this.dangThemSua=true;
-    // this.tieude="Thêm Tour";
+    this.dangThemSua = true;
+    this.bankInfo = null;
+    this.transferInstructions = null;
+    this.showSuccessMessage = false;
+    this.errorMessage = null;
+    this.isBanking = false;
   }
 
-  muaNgay(paymentForm: any) {
-    // Kiểm tra nếu form không hợp lệ thì không làm gì
+  muaNgay(paymentForm: any): void {
     if (!paymentForm.valid) {
-      alert('Vui lòng điền đầy đủ thông tin!');
-      return; // Dừng lại nếu form không hợp lệ
+      this.errorMessage = 'Vui lòng điền đầy đủ thông tin!';
+      return;
     }
-  
-    let totalMoney = 0;
-  
-    // Duyệt qua tất cả các sản phẩm trong giỏ hàng và tính tổng tiền
-    this.cartItems.forEach(item => {
-      totalMoney += item.product.price * item.quantity;
-    });
-  
-    // Dữ liệu đơn hàng
+    const formValue = paymentForm.value;
+    this.isBanking = formValue.payment === 'Banking';
     const orderData = {
-      customer_id: this.user_id,
-      order_status: this.order_status,
+      user_id: this.user_id!,
+      full_name: formValue.fullname,
+      order_status: this.isBanking ? 'Chờ xác nhận' : 'Đang xử lý',
       create_at: new Date(),
-      total_amount: totalMoney,  // Sử dụng tổng tiền đã tính
+      total_amount: this.totalAmount,
+      address: formValue.address,
+      phone: formValue.phone,
+      payment_method: formValue.payment,
     };
-  
-    console.log(orderData);
-  
-    // Gửi yêu cầu tạo đơn hàng
     this.orderService.postOrder(orderData).subscribe({
       next: (order: Order) => {
         const createdOrderId = order.order_id;
-        console.log('Order created with ID:', createdOrderId);
-  
-        // Tạo chi tiết đơn hàng cho mỗi sản phẩm trong giỏ hàng
-        const orderDetailsRequests = this.cartItems.map(item => {
+        const orderDetailsRequests = this.selectedItems.map((item) => {
           const orderDetailData = {
             order_id: createdOrderId,
             product_id: item.product.product_id,
+            product_name: item.product.product_name,
+            imagePath: item.product.image_url,
             price: item.product.price,
             number_of_products: item.quantity,
             total_money: item.product.price * item.quantity,
           };
-          return this.orderDetailService.postOrderDetail(orderDetailData);
+          return this.orderDetailService
+            .postOrderDetail(orderDetailData)
+            .pipe(catchError(() => of(null)));
         });
-  
-        // Dùng forkJoin để gửi tất cả các yêu cầu chi tiết đơn hàng
         forkJoin(orderDetailsRequests).subscribe({
-          next: () => {
-            alert('Đặt hàng thành công.');
-            console.log('Dữ liệu gửi đến API:', orderDetailsRequests);
+          next: (results) => {
+            if (results.includes(null)) {
+              this.errorMessage = 'Lỗi tạo chi tiết đơn hàng!';
+              return;
+            }
+            const deleteRequests = this.selectedItems.map((item) =>
+              this.cartService
+                .deleteCart(item.cart_id)
+                .pipe(catchError(() => of(null)))
+            );
+            forkJoin(deleteRequests).subscribe({
+              next: () => {
+                this.showSuccessMessage = true;
+                setTimeout(() => {
+                  if (this.isBanking) {
+                    this.bankInfo =
+                      'Ngân hàng: MBbank\nSố tài khoản: 0337431736\nChủ tài khoản: Nguyễn Đặng Thành Huy';
+                    this.transferInstructions = `Vui lòng quét mã QR, nhập ${this.totalAmount.toLocaleString(
+                      'vi-VN'
+                    )} VNĐ, nội dung "DH${createdOrderId}" trong 24h.`;
+                    this.showSuccessMessage = false;
+                  } else {
+                    this.closeModal();
+                    this.router.navigate([`/home/user/viewOH/${this.user_id}`]);
+                  }
+                }, 2000);
+              },
+              error: () => (this.errorMessage = 'Lỗi xóa giỏ hàng!'),
+            });
           },
-          error: (err) => {
-            alert('Lỗi khi tạo chi tiết đơn hàng.');
-          },
+          error: () => (this.errorMessage = 'Lỗi tạo chi tiết đơn hàng!'),
         });
       },
-      error: (err) => {
-        alert('Lỗi khi tạo đơn hàng.');
+      error: (error) => {
+        this.errorMessage =
+          error.status === 400
+            ? 'ID người dùng không hợp lệ!'
+            : 'Lỗi tạo đơn hàng!';
+        this.closeModal();
       },
     });
   }
-  
-  dong(){
-    this.dangThemSua=false;
-    // this.layDSTour();
+
+  dong(): void {
+    this.dangThemSua = false;
+    this.bankInfo = null;
+    this.transferInstructions = null;
+    this.showSuccessMessage = false;
+    this.errorMessage = null;
+    this.isBanking = false;
+    this.closeModal();
+  }
+
+  onCheckboxChange(): void {
+    this.calculateTotal();
+  }
+
+  closeModal(): void {
+    const modal = document.getElementById('exampleModal');
+    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+    if (bootstrapModal) {
+      bootstrapModal.hide();
+      setTimeout(() => this.loadCart(), 300);
+    }
+  }
+
+  confirmTransfer(): void {
+    this.closeModal();
+    this.router.navigate([`/home/user/viewOH/${this.user_id}`]);
   }
 }

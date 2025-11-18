@@ -1,1 +1,42 @@
+
 <router-outlet></router-outlet>
+
+
+
+<div title="Giỏ hàng" *ngIf="!isCartDetailPage">
+  <div class="floating-cart" (click)="toggleCartPanel()">
+    🛒
+    <span class="cart-count" *ngIf="cartItems.length > 0">{{ cartItems.length }}</span>
+  </div>
+
+  <!-- Panel hiện giỏ hàng -->
+  <div class="cart-panel" [class.open]="showCartPanel">
+    <h3>Giỏ hàng của bạn</h3>
+    <ul *ngIf="cartItems.length > 0">
+      <li *ngFor="let item of cartItems">
+        <img [src]="item.PathAnh" alt="{{ item.product_name }}" class="product-image" width="50" height="50"
+          style="margin-right: 8px;" />
+        <div style="display: inline-block; vertical-align: top;">
+          <strong>{{ item.product_name }}</strong><br>
+          {{ item.price | number }}₫ x {{ item.quantity }}
+          <div style="margin-top: 5px;">
+            <button (click)="decreaseQuantity(item)">−</button>
+            <button (click)="increaseQuantity(item)">+</button>
+            <button (click)="removeItem(item)">🗑</button>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <div *ngIf="cartItems.length === 0">
+      Giỏ hàng trống.
+    </div>
+    <div style="margin-top: 15px; text-align: center;" *ngIf="cartItems.length > 0">
+      <button (click)="goToCartDetail()"
+        style="padding: 8px 16px; border-radius: 8px; background-color: #007bff; color: white; border: none;">
+        Xem chi tiết giỏ hàng
+      </button>
+    </div>
+  </div>
+
+  <app-chatbot></app-chatbot>
+</div>

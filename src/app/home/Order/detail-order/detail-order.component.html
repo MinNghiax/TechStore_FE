@@ -1,58 +1,52 @@
+<div class="outer-container">
+  <div><h2>Chi tiết Đơn hàng</h2></div>
 
-  <div class="outer-container">
-    <div>
-        <h2>Chi tiết Đơn hàng</h2>
-    </div>
-    <div class="order-container" >
-        <div class="info">
-            <p style="padding-left: 10px; padding-top: 10px;"><strong>{{order_status}}</strong></p>
-        
-        <!-- Trạng thái đơn hàng -->
-        <div *ngIf="orderDetails" class="order-status">
-          <div style="margin-bottom: 55px;">
-            <p><strong>Thông tin vận chuyển</strong></p>
-          </div>
-          <div>
-            <p>Công ty vận chuyển Giao Hàng Nhanh</p>
-            <p>Shipper: Nguyễn Văn A</p>
-            <p>SĐT: 089432987</p>
-          </div>
+  <div class="order-container">
+    <div class="info">
+      <p style="padding-left: 10px; padding-top: 10px;"><strong>{{ order_status }}</strong></p>
+
+      <div *ngIf="orderDetailsList?.length > 0" class="order-status">
+        <div style="margin-bottom: 55px;"><p><strong>Thông tin vận chuyển</strong></p></div>
+        <div>
+          <p>Công ty vận chuyển Giao Hàng Nhanh</p>
+          <p>Shipper: Nguyễn Đặng Thành Huy</p>
+          <p>SĐT: 0337431736</p>
         </div>
-        </div>
-        
-        <!-- Thông tin nhận hàng -->
-        <div class="customer-info" *ngIf="customer_name">
-        <div style="margin-bottom: 55px;">
-            <p style="font-weight: bold;">Địa chỉ nhận hàng</p>
-        </div>
-          <div>
-            <p><strong> {{ customer_name }}</strong></p>
-            <p>{{ customer_phone }}</p>
-            <p>{{ customer_address }}</p>
-          </div>
-        </div>
-        
-        <!-- Thông tin sản phẩm -->
-        <div class="product-info">
-          <div class="product-image">
-            <img [src]="PathAnh"/>
-          </div>
-          <div class="product-details">
-            <p style="font-weight: bold;">{{ product_name }}</p>
-            <p>{{ orderDetails.price | currency }}</p>
-          </div>
-        </div>
-          
-        <!-- Tổng giá trị -->
-        <div class="order-summary">
-          <p><strong>Thành tiền:</strong> {{ orderDetails.total_money | currency }}</p>
-          <p><strong>Phương thức thanh toán:</strong> Thanh toán khi nhận hàng</p>
-        </div>
-        
-        <!-- Buttons -->
-        <div class="action-buttons">
-            <button (click)="huyOrderDetail(orderDetails)" class="cancel-order-btn">Hủy Đơn Hàng</button>
-            <button style="margin-left: 100px;" (click)="goBackToOrderList()" class="back-to-list-btn">Quay Lại Danh Sách Đơn Hàng</button>
-          </div>
       </div>
+    </div>
+
+    <div class="customer-info" *ngIf="order">
+      <div class="delivery-info">
+        <h3>Thông tin người nhận</h3>
+        <p>👤 Họ tên: {{ customer_name }}</p>
+        <p>📞 Số điện thoại: {{ order.phone }}</p>
+        <p>🏠 Địa chỉ: {{ order.address }}</p>
+      </div>
+    </div>
+
+  <div class="product-info-container" *ngIf="orderDetailsList?.length > 0">
+  <div style="margin-bottom: 15px;"><p style="font-weight: bold;">Sản phẩm trong đơn hàng</p></div>
+  <div class="scrollable-product-list">
+    <div *ngFor="let detail of orderDetailsList; let i = index" class="product-item">
+      <div class="product-image">
+        <img [src]="productService.PhotosUrl + '/' + products[i]?.image_url" alt="Product Image">
+      </div>
+      <div class="product-details">
+        <p class="product-name">{{ products[i]?.product_name }}</p>
+        <p>Đơn giá: {{ detail.price | currency: 'VND' }}</p>
+        <p>Số lượng: {{ detail.number_of_products }}</p>
+      </div>
+    </div>
   </div>
+</div>
+
+    <div class="order-summary">
+      <p><strong>Thành tiền:</strong> {{ totalMoney | currency : 'VND' }}</p>
+      <p><strong>Phương thức thanh toán:</strong> {{ order.payment_method }}</p>
+    </div>
+    <div class="action-buttons">
+      <button (click)="huyOrderDetail()" class="cancel-order-btn">Hủy Đơn Hàng</button>
+      <button style="margin-left: 100px;" (click)="goBackToOrderList()" class="back-to-list-btn">Quay Lại Danh Sách Đơn Hàng</button>
+    </div>
+  </div>
+</div>

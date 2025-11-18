@@ -10,7 +10,7 @@ import { ReviewService } from '../../../Service/review-service';
 import { Reviews } from '../../../Models/reviews';
 import { User } from '../../../Models/users';
 import { userService } from '../../../Service/userService';
-import { ShoppingCartService } from '../../../Service/shoppingCartService';
+
 
 @Component({
   selector: 'app-detail-products',
@@ -19,7 +19,7 @@ import { ShoppingCartService } from '../../../Service/shoppingCartService';
 })
 export class DetailProductsComponent {
 
-  public product: Product;  // Khai báo là đối tượng duy nhất
+  public product: Product;
 
   total_amount: number;
   order: Order;
@@ -40,8 +40,6 @@ export class DetailProductsComponent {
 
   }
 
-
-    // Lấy chi tiết sản phẩm theo ID
   layDetailsSP(id: number) {
     this.productService.getProductDetails(id).subscribe({
       next: (data) => {
@@ -49,11 +47,9 @@ export class DetailProductsComponent {
        console.log(id); 
         console.log('Sản phẩm chi tiết:', data); 
         data.PathAnh = this.productService.PhotosUrl + "/" + data.image_url ;
-
-         // Gán thông tin chi tiết sản phẩm
-        this.product_id = data.product_id; // ID sản phẩm
-        this.price = data.price;          // Giá sản phẩm
-        this.total_amount = data.price;   // Tổng tiền mặc định bằng giá sản phẩm
+        this.product_id = data.product_id;
+        this.price = data.price;
+        this.total_amount = data.price;
       },
       error: (err) => {
         console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
@@ -62,7 +58,7 @@ export class DetailProductsComponent {
   }
 
   goBack() {
-    this.router.navigate([`/admin/products/list/`, 0]); // Điều hướng về danh sách với ID   
+    this.router.navigate([`/admin/products/list/`, 0]);  
   }
 
   goBack2() {

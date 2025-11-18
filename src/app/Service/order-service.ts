@@ -1,68 +1,76 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { User } from '../Models/users';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Order } from '../Models/order';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'http://localhost:5038/api';
+  private apiUrl = 'https://localhost:7139/api/Orders';
 
   private httpOptions = {
     headers: new HttpHeaders({
       "Content-Type": 'application/json'
     })
+  };
+  private validStatuses = ['Chờ xác nhận', 'Đang xử lý', 'Đã xác nhận', 'Đang vận chuyển', 'Đã giao', 'Trả hàng', 'Đã hoàn tiền', 'Đã hủy', 'Vấn đề trong xử lý'];
+  constructor(private http: HttpClient) { }
+
+  getOrders(): Observable<Order[]> {
+    return this.http.get<Order[]>(this.apiUrl);
   }
 
-  constructor(private http: HttpClient) {}
-
-    getOrders(): Observable<any> {
-        return this.http.get<any>(this.apiUrl+'/Orders');
-    }
-
-    deleteOrder(orderId: number): Observable<any> {
-        return this.http.delete(`${this.apiUrl}/Orders/deleteorders/${orderId}`);
-    }
-
-    getOrderById(id: number): Observable<any> {
-        const url = `${this.apiUrl}/Orders/${id}`;
-        return this.http.get<any>(url, this.httpOptions);
-    }
-    postOrder(body: any) : Observable<Order>{
-      const url = `${this.apiUrl}/Orders`;
-      return this.http.post<Order>(url, body);
-    }
-
-    getOrderByCustomerId(id: number): Observable<any> {
-      const url = `${this.apiUrl}/Orders/customer/${id}`;
-      return this.http.get<any>(url, this.httpOptions);
+  deleteOrder(orderId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${orderId}`);
   }
 
-    updateDonhang(id: number, body: any): Observable<any> {
-    const url = `${this.apiUrl}/Orders/${id}`;
-    return this.http.put<any>(url, body, this.httpOptions);
+  getOrderById(id: number): Observable<Order> {
+    return this.http.get<Order>(`${this.apiUrl}/${id}`, this.httpOptions);
   }
 
-  timkiem(searchText :string): Observable<any>{
-    const url = `${this.apiUrl}/Orders/search/${searchText}`;
-    return this.http.get<any>(url);
+  postOrder(body: any): Observable<Order> {
+    return this.http.post<Order>(this.apiUrl, body, this.httpOptions);
+  }
+
+  getOrderByCustomerId(id: number): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.apiUrl}/customer/${id}`, this.httpOptions);
+  }
+
+  updateDonhang(id: number, body: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, body, this.httpOptions);
   }
 
   updateOrderStatus(id: number, newStatus: string): Observable<any> {
-    const url = `${this.apiUrl}/Orders/${id}`;
-    
-    // Tạo một đối tượng JSON chứa orderStatus
-    const body = { orderStatus: newStatus };
-  
-    // Đảm bảo httpOptions có Content-Type là application/json
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
+    console.log('Sending PATCH request for order:', { id, newStatus });
+    if (!this.validStatuses.includes(newStatus)) {
+      console.error(`Invalid status: ${newStatus}. Valid statuses: ${this.validStatuses.join(', ')}`);
+      return throwError(() => new Error(`Trạng thái '${newStatus}' không hợp lệ. Các trạng thái hợp lệ: ${this.validStatuses.join(', ')}`));
+    }
+
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.patch<any>(url, `"${newStatus}"`, this.httpOptions).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('PATCH error:', error); 
+        let errorMessage = 'Lỗi khi cập nhật trạng thái đơn hàng!';
+        if (error.status === 404) {
+          errorMessage = `Không tìm thấy đơn hàng với ID ${id}!`;
+        } else if (error.status === 400) {
+          errorMessage = `Yêu cầu không hợp lệ: ${error.error || 'Kiểm tra trạng thái đơn hàng!'}`;
+        } else if (error.status === 500) {
+          errorMessage = 'Lỗi máy chủ, không thể gửi email hoặc cập nhật trạng thái!';
+        }
+        return throwError(() => new Error(errorMessage));
       })
-    };
-  
-    return this.http.patch<any>(url, body, httpOptions);
+    );
   }
+
+  timkiem(searchText: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/search`, {
+      params: { keyword: searchText }
+    });
+  }
+
+
 }

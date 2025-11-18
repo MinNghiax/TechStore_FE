@@ -1,0 +1,47 @@
+<div class="floating-message-container" *ngIf="!showChat && !showForm">
+  <div class="floating-message msg1">Xin chào Anh/Chị! Em là trợ lý AI của Tech Store</div>
+  <div class="floating-message msg2">Em rất sẵn lòng hỗ trợ Anh/Chị 😊</div>
+</div>
+
+
+<div title="Chat bot" class="chat-toggle" (click)="toggleChat()">
+  <img src="assets/img/chatbot-logo2.jpg" alt="Chatbot" class="chat-icon" />
+</div>
+
+<div class="user-info-form" *ngIf="showForm">
+  <div class="form-header">
+    <img src="assets/img/logo.png" class="form-avatar" />
+    <span>Tech Store xin kính chào quý khách👋</span>
+  </div>
+  <div class="form-body">
+    <input [(ngModel)]="userName" placeholder="Vui lòng nhập họ tên..." />
+    <input [(ngModel)]="userPhone" placeholder="Vui lòng nhập số điện thoại..." />
+    <button (click)="submitUserInfo()">Bắt đầu trò chuyện</button>
+  </div>
+</div>
+
+<div class="chat-window" *ngIf="showChat && !showForm">
+  <div class="chat-header">
+    <span><img src="assets/img/logo.png" class="bot-avatar" /> Tech Store</span>
+    <button (click)="toggleChat()">×</button>
+  </div>
+
+  <div class="chat-body" #chatBody>
+    <div *ngFor="let msg of messages">
+      <div [ngClass]="msg.from" [innerHTML]="msg.text"></div>
+    </div>
+  </div>
+
+  <div class="suggestion-area" *ngIf="showSuggestions">
+    <div class="suggestion-chips">
+      <button *ngFor="let chip of suggestionChips" class="suggestion-chip" (click)="selectSuggestion(chip)">
+        {{ chip }}
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input [(ngModel)]="inputText" (keydown.enter)="sendMessage()" placeholder="Nhập tin nhắn..." />
+    <button (click)="sendMessage()">Gửi</button>
+  </div>
+</div>

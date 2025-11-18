@@ -31,13 +31,13 @@ export class ListOrderComponent {
   ngOnInit() {
     this.layOrder();
   }
-
+ 
   layOrder() {
     this.orderService.getOrders().subscribe(
       data => {
         this.orders = data;
         if (Array.isArray(data) && data.length > 0) {
-          const customerId = data[0].customer_id;
+          const customerId = data[0].user_id;
          
           this._userService.getUserById(customerId).subscribe(us => {
             this.username = us.username;
@@ -53,4 +53,5 @@ export class ListOrderComponent {
   viewOrderDetails(Id: number): void {
     this.router.navigate(['home/order/detailOrder/', Id]);
   }
+  
 }

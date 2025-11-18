@@ -1,40 +1,68 @@
-.create-form{
-    max-width: 450px ;
-    margin: 0px auto;
-    background-color: rgb(231, 228, 228);
-    padding: 20px ;
-    border-radius: 15px;
+.create-form {
+  display: flex;
+  justify-content: center;
+  margin-top: 100px;
+}
 
-    box-shadow: 10px 10px 5px rgba(185, 182, 182, 0.5);
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .modal-header h5 {
-    align-items: center;
-    margin-left: 130px;
-    margin-bottom: 30px;
-    font-weight: bold;
-    color: rgb(21, 73, 243);
-  }
-  .create-form label{
-    font-weight: bold;
-    margin-left: 42px;
-    width: 22%;
-    margin-top: 5px;
+.form-container {
+  background: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 400px;
+}
 
-  }
-  
-  .create-form input {
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 200px;
-  }
+.modal-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
 
+.modal-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #007bff;
+}
 
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
 
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
 
-  
+.form-control {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+.form-actions {
+  text-align: center;
+}
+
+.btn-submit {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #0056b3;
+  cursor: pointer;
+}

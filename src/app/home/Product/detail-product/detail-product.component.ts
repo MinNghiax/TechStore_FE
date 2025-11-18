@@ -1,304 +1,327 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ProductService } from '../../../Service/productService';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Product } from '../../../Models/product';
-import { Subscription } from 'rxjs';
-import { OrderService } from '../../../Service/order-service';
-import { Order } from '../../../Models/order';
-import { OrderDetailService } from '../../../Service/order-detail-service';
+import { ProductService } from '../../../Service/productService';
 import { ReviewService } from '../../../Service/review-service';
-import { Reviews } from '../../../Models/reviews';
-import { User } from '../../../Models/users';
 import { userService } from '../../../Service/userService';
-import { ShoppingCartService } from '../../../Service/shoppingCartService';
+import { CartService, CartItem } from '../../../Service/cart.service';
+import { OrderService } from '../../../Service/order-service';
+import { OrderDetailService } from '../../../Service/order-detail-service';
+import { Product } from '../../../Models/product';
+import { Reviews } from '../../../Models/reviews';
+import { Order } from '../../../Models/order';
+import { NgForm } from '@angular/forms';
+import { Location } from '@angular/common';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-detail-product',
   templateUrl: './detail-product.component.html',
-  styleUrl: './detail-product.component.css'
+  styleUrls: ['./detail-product.component.css'],
 })
-export class DetailProductComponent {
-  public product: Product;  // Khai báo là đối tượng duy nhất
-  private routeSub: Subscription;
-  dangThemSua:boolean= false;
-  order_id: number;
-  customer_id: number;
-  order_status: string = "Đang xử lý";
-  create_at: Date;
-  total_amount: number;
-  order: Order;
-  product_id : number;
-  price: number;
-  number_of_products: number =1;
-  total_money: number;
-  user:User;
+export class DetailProductComponent implements OnInit {
+  product!: Product;
   reviews: Reviews[] = [];
   newReview: string = '';
   rating: number = 0;
-  customer_name:string;
-
-  isPressedAddToCart:boolean = false;
-  user_id:number;
-  selectedReview: any= null;
   contenReview: string = '';
-  ratingReview: number;
+  ratingReview: number = 0;
+  selectedReview: Reviews | null = null;
+  product_id!: number;
+  currentUserId: number | null = null;
+  isAdmin: boolean = false;
+  dangThemSua: boolean = false;
+  selectedItem: any = null;
+  number_of_products: number = 1;
+  showSuccessMessage: boolean = false;
+  isBanking: boolean = false;
+  bankInfo: string | null = null;
+  transferInstructions: string | null = null;
+  qrCodeUrl: string = 'assets/img/maQR2.jpg';
+  errorMessage: string | null = null;
 
   constructor(
     private productService: ProductService,
-    private orderService: OrderService,
-    private route: ActivatedRoute, private router:Router,
-    private orderDetailService: OrderDetailService,
+    private route: ActivatedRoute,
+    private router: Router,
     private reviewService: ReviewService,
-    public userService:userService,
-    private shoppingcartService : ShoppingCartService
+    public userService: userService,
+    private cartService: CartService,
+    private orderService: OrderService,
+    private orderDetailService: OrderDetailService,
+    private location: Location
   ) {}
 
   ngOnInit() {
-    const Id = Number(this.route.snapshot.paramMap.get('product_id'));
-    this.product_id = Id;
-    console.log(this.product_id);
-    this.layDetailsSP(Id);
-    this.loadReviews(Id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const id = Number(this.route.snapshot.paramMap.get('product_id'));
+    this.product_id = id;
+    this.loadProduct(id);
+    this.loadReviews(id);
 
-    // Mặc định số lượng sản phẩm là 1
-    this.number_of_products = 1;
-    this.loadUser(this.customer_id);
-
-    // Lấy thông tin người dùng và gán customer_id
-    const currentUser = this.userService.getCurrentUser();  
+    const currentUser = this.userService.getCurrentUser();
     if (currentUser) {
-      this.user_id = currentUser.user_id;  
-      this.customer_name = currentUser.username;
-    } else {
-      console.log('Không có người dùng đăng nhập');
-      
+      this.currentUserId = currentUser.user_id;
+      this.isAdmin = currentUser.role_id === 1;
     }
+
+    this.userService.getCurrentUserObservable().subscribe((user) => {
+      if (user) {
+        this.currentUserId = user.user_id;
+        this.isAdmin = user.role_id === 1;
+      } else {
+        this.currentUserId = null;
+        this.isAdmin = false;
+      }
+    });
   }
 
-
-    // Load Reviews for the Product
-    loadReviews(product_id) {
-      this.reviewService.getReviewsByProduct(product_id).subscribe({
-        next: (data) => {
-          this.reviews = data;
-          this.loadUser(this.user_id);
-        },
-        error: (err) => {
-          console.error('Error loading reviews:', err);
-        }
-      });
-    }
-
-    // Submit a Review
-    submitReview() {
-      if (!this.newReview || this.rating === 0) {
-        alert('Please provide a review and a rating.');
-        return;
-      }
-  
-      const reviewData = {
-        product_id: this.product_id,
-        user_id: this.customer_id,
-        content: this.newReview,
-        rating: this.rating,
-        create_at: new Date()
-      };
-      console.log('dataa',reviewData);
-  
-      this.reviewService.addReview(reviewData).subscribe({
-        next: (response) => {
-          alert('Review submitted successfully!');
-          this.loadReviews(this.product_id); // Reload reviews after adding the new one
-          this.newReview = ''; // Clear the review input
-          this.rating = 0; // Reset rating
-        },
-        error: (err) => {
-          console.error('Error submitting review:', err);
-          alert('Failed to submit review.');
-        }
-      });
-    }
-
-    deleteReview(reviewId: number): void {
-    this.reviewService.deleteReview(reviewId).subscribe(
-      () => {
-        this.loadUser(this.user_id);
-        this.loadReviews(this.product_id); 
-      },
-      (error) => {
-        console.error('Error deleting review', error);
-      }
-    );
+  goBack() {
+    this.location.back();
   }
 
-    loadUser(id:number){
-      this.userService.getUserById(id).subscribe({
-        next: (u) => {
-
-          this.customer_id = u.user_id;
-          this.customer_name = u.username;
-        },
-        error: (err) => {
-          console.error(`Lỗi khi lấy user với ID ${id}:`, err);
-        }
-      });
-    }
-
-
-
-  // Lấy chi tiết sản phẩm theo ID
-  layDetailsSP(id: number) {
+  loadProduct(id: number) {
     this.productService.getProductDetails(id).subscribe({
       next: (data) => {
-       this.product = data;
-       console.log(id); 
-        console.log('Sản phẩm chi tiết:', data); 
-        data.PathAnh = this.productService.PhotosUrl + "/" + data.image_url ;
-
-         // Gán thông tin chi tiết sản phẩm
-        this.product_id = data.product_id; // ID sản phẩm
-        this.price = data.price;          // Giá sản phẩm
-        this.total_amount = data.price;   // Tổng tiền mặc định bằng giá sản phẩm
+        this.product = data;
+        this.product.PathAnh =
+          this.productService.PhotosUrl + '/' + data.image_url;
       },
-      error: (err) => {
-        console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
-      }
+      error: () => console.error('Lỗi khi lấy sản phẩm.'),
+    });
+  }
+
+  loadReviews(productId: number) {
+    this.reviewService.getReviewsByProduct(productId).subscribe({
+      next: (data) => {
+        const reviewPromises = data.map(async (review) => {
+          try {
+            const user = await this.userService
+              .getUserById(review.user_id)
+              .toPromise();
+            return { ...review, username: user?.username || 'Khách' };
+          } catch {
+            return { ...review, username: 'Khách' };
+          }
+        });
+
+        Promise.all(reviewPromises).then((reviewsWithUser) => {
+          this.reviews = reviewsWithUser;
+        });
+      },
+      error: () => console.error('Lỗi khi tải đánh giá.'),
+    });
+  }
+
+  submitReview() {
+    if (!this.newReview.trim() || this.rating === 0) {
+      alert('Vui lòng nhập nội dung và chọn số sao.');
+      return;
+    }
+
+    if (!this.currentUserId) {
+      alert('Vui lòng đăng nhập để đánh giá.');
+      this.router.navigate(['/home/login']);
+      return;
+    }
+
+    const review = {
+      product_id: this.product_id,
+      user_id: this.currentUserId,
+      content: this.newReview.trim(),
+      rating: this.rating,
+      create_at: new Date(),
+    };
+
+    this.reviewService.addReview(review).subscribe({
+      next: () => {
+        alert('Đánh giá thành công!');
+        this.newReview = '';
+        this.rating = 0;
+        this.loadReviews(this.product_id);
+      },
+      error: () => alert('Không gửi được đánh giá.'),
     });
   }
 
   editReview(review: Reviews) {
     this.selectedReview = review;
-    this.contenReview = review.content ;
-    this.ratingReview = review.rating ;
+    this.contenReview = review.content;
+    this.ratingReview = review.rating;
   }
 
   suaReview() {
-    if (!this.selectedReview || !this.selectedReview.id) {
-      console.error('Danh mục chưa được chọn hoặc không hợp lệ.');
+    if (!this.selectedReview) {
+      alert('Không có đánh giá để sửa.');
       return;
     }
 
-    const val = { id: this.selectedReview.id, content: this.contenReview, rating: this.ratingReview };
-    this.reviewService.updateReview(this.selectedReview.id, val).subscribe(
-      response => {
-        this.loadReviews(this.product_id); 
-        console.log('Sửa thành công:', response);
-        alert('Sửa  thành công!');
+    const update = {
+      id: this.selectedReview.id,
+      content: this.contenReview.trim(),
+      rating: this.ratingReview,
+    };
+
+    this.reviewService.updateReview(this.selectedReview.id, update).subscribe({
+      next: () => {
+        alert('Đã cập nhật đánh giá!');
+        this.loadReviews(this.product_id);
+        this.selectedReview = null;
+        this.contenReview = '';
+        this.ratingReview = 0;
       },
-      error => {
-        console.error('Có lỗi khi sửa!', error);
-        if (error.error) {
-          console.error('Chi tiết lỗi:', error.error);
-        }
-      }
-    );
+      error: () => alert('Cập nhật đánh giá hỏng.'),
+    });
   }
 
+  deleteReview(reviewId: number) {
+    if (!confirm('Bạn có chắc muốn xóa đánh giá này?')) return;
 
+    this.reviewService.deleteReview(reviewId).subscribe({
+      next: () => {
+        alert('Đã xóa đánh giá!');
+        this.loadReviews(this.product_id);
+      },
+      error: () => alert('Xóa thất bại.'),
+    });
+  }
+
+  addToCart() {
+    if (!this.currentUserId) {
+      alert('Vui lòng đăng nhập để thêm vào giỏ hàng.');
+      this.router.navigate(['/home/login']);
+      return;
+    }
+
+    if (!this.product?.product_id) {
+      alert('Không tìm thấy sản phẩm.');
+      return;
+    }
+
+    const cartItem: CartItem = {
+      user_id: this.currentUserId,
+      product_id: this.product.product_id,
+      quantity: this.number_of_products,
+      added_at: new Date().toISOString(),
+    };
+
+    this.cartService.addToCart(cartItem).subscribe({
+      next: () => alert('🛒 Đã thêm vào giỏ hàng!'),
+      error: () => alert('❌ Thêm vào giỏ hàng thất bại.'),
+    });
+  }
 
   themDon() {
-    // Kiểm tra xem người dùng đã đăng nhập chưa
-    const currentUser = this.userService.getCurrentUser();
-    
-    if (!currentUser) {
-      // Nếu chưa đăng nhập, yêu cầu người dùng đăng nhập và điều hướng đến trang đăng nhập
+    if (!this.currentUserId) {
       alert('Vui lòng đăng nhập để tiếp tục đặt hàng.');
-      this.router.navigate(['/home/login']); // Điều hướng đến trang đăng nhập
-      return; // Dừng lại và không hiển thị form đặt hàng
-    } else{
-      // Nếu đã đăng nhập, tiếp tục xử lý đặt hàng
-      this.user_id = currentUser.user_id;  // Lấy user_id của người dùng đã đăng nhập
-      this.customer_name = currentUser.username; // Lấy tên người dùng nếu cần
-      
-      // Khởi tạo đơn hàng mới
-      this.order = {
-        order_id: 0,
-        customer_id: this.user_id, // Gán user_id cho đơn hàng
-        order_status: 'Đang xử lý',  // Cập nhật trạng thái đơn hàng ban đầu
-        create_at: new Date(),  // Thời gian tạo đơn hàng
-        total_amount: 0  // Tổng tiền mặc định (sẽ tính toán sau)
-    };
-  
-    this.dangThemSua = true;  // Thiết lập flag để mở form thêm đơn hàng
+      this.router.navigate(['/home/login']);
+      return;
     }
-  
-    
+
+    if (!this.product) {
+      alert('Sản phẩm không tồn tại.');
+      return;
+    }
+
+    this.selectedItem = {
+      product: this.product,
+      quantity: this.number_of_products,
+      PathAnh: this.product.PathAnh,
+      price: this.product.price,
+      total_amount: this.product.price * this.number_of_products,
+    };
+    this.dangThemSua = true;
   }
 
-  muaNgay(paymentForm: any) {
-    // Tính tổng tiền cho chi tiết đơn hàng
-    this.total_money = this.price * this.number_of_products;
-  
-    // Dữ liệu đơn hàng
+  muaNgay(paymentForm: NgForm) {
+    if (!paymentForm.valid) {
+      this.errorMessage = 'Vui lòng điền đầy đủ thông tin hợp lệ!';
+      return;
+    }
+
+    const formValue = paymentForm.value;
+    this.isBanking = formValue.payment === 'Banking';
+    const orderStatus = this.isBanking ? 'Chờ xác nhận' : 'Đang xử lý';
+
     const orderData = {
-      customer_id: this.user_id,
-      order_status: this.order_status,
+      user_id: this.currentUserId!,
+      full_name: formValue.fullname,
+      order_status: orderStatus,
       create_at: new Date(),
-      total_amount: this.total_money,
+      total_amount: this.selectedItem.total_amount,
+      address: formValue.address,
+      phone: formValue.phone,
+      payment_method: formValue.payment,
     };
-  
-    // Gửi yêu cầu tạo đơn hàng
+
     this.orderService.postOrder(orderData).subscribe({
       next: (order: Order) => {
-        // Sử dụng order_id từ phản hồi API
         const createdOrderId = order.order_id;
-        console.log('Order created with ID:', createdOrderId);
-        
-        // Dữ liệu chi tiết đơn hàng
         const orderDetailData = {
           order_id: createdOrderId,
-          product_id: this.product_id,
-          price: this.price,
-          number_of_products: this.number_of_products,
-          total_money: this.total_money,
+          product_id: this.selectedItem.product.product_id,
+          product_name: this.selectedItem.product.product_name,
+          imagePath: this.selectedItem.product.image_url,
+          price: this.selectedItem.product.price,
+          number_of_products: this.selectedItem.quantity,
+          total_money: this.selectedItem.total_amount,
         };
-  
-        // Gửi yêu cầu tạo chi tiết đơn hàng
+
         this.orderDetailService.postOrderDetail(orderDetailData).subscribe({
           next: () => {
-            alert('Đặt hàng thành công.');
-            console.log('Dữ liệu gửi đến API:', orderDetailData);
+            this.showSuccessMessage = true;
+            setTimeout(() => {
+              if (this.isBanking) {
+                this.bankInfo =
+                  'Ngân hàng: MBbank\nSố tài khoản: 0337431736\nChủ tài khoản: Nguyễn Đặng Thành Huy';
+                this.transferInstructions = `Vui lòng quét mã QR, nhập ${this.selectedItem.total_amount.toLocaleString(
+                  'vi-VN'
+                )} VNĐ, nội dung "DH${createdOrderId}" trong 24h.`;
+                this.showSuccessMessage = false;
+              } else {
+                this.closeModal();
+                this.router.navigate([
+                  `/home/user/viewOH/${this.currentUserId}`,
+                ]);
+              }
+            }, 2000);
           },
-          error: (err) => {
-            alert('Lỗi khi tạo chi tiết đơn hàng. ');
+          error: () => {
+            this.errorMessage = 'Lỗi khi tạo chi tiết đơn hàng!';
+            this.dong();
           },
         });
       },
-      error: (err) => {
-        alert('Lỗi khi tạo đơn hàng.');
+      error: (error) => {
+        this.errorMessage =
+          error.status === 400
+            ? 'ID người dùng không hợp lệ!'
+            : 'Lỗi khi tạo đơn hàng!';
+        this.dong();
       },
     });
   }
-  
 
-
-
-  dong(){
-    this.dangThemSua=false;
+  dong() {
+    this.dangThemSua = false;
+    this.selectedItem = null;
+    this.number_of_products = 1;
+    this.showSuccessMessage = false;
+    this.isBanking = false;
+    this.bankInfo = null;
+    this.transferInstructions = null;
+    this.errorMessage = null;
+    this.closeModal();
   }
 
-  addToCart(): void {
-    if (this.product) {
-      // Lấy user_id từ userService
-      const currentUser = this.userService.getCurrentUser();
-      let user_id: number | null = null;
+  closeModal() {
+    const modal = document.getElementById('exampleModal');
+    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+    if (bootstrapModal) bootstrapModal.hide();
+  }
 
-      if (currentUser) {
-        user_id = currentUser.user_id;
-      }
-
-      if (user_id) {
-        // Thêm sản phẩm vào giỏ hàng với user_id
-        this.shoppingcartService.addToCart(this.product.product_id, 1, user_id);
-        console.log("user_id",this.user_id);
-        this.isPressedAddToCart = true;
-        this.router.navigate(['/home/product/carts']);
-        alert("Thêm sản phẩm vào giỏ hàng thành công.");
-      } else {
-        console.error('Không thể thêm sản phẩm vào giỏ hàng vì không có user_id.');
-      }
-    } else {
-      console.error('Không thể thêm sản phẩm vào giỏ hàng vì product là null.');
-    }
+  confirmTransfer() {
+    this.closeModal();
+    this.router.navigate([`/home/user/viewOH/${this.currentUserId}`]);
   }
 }

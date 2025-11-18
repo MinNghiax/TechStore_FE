@@ -19,15 +19,16 @@ export class CreateProductComponent {
   category_id: number;
   price: number;
   quantity: number;
-  image_url: string = "com.jpg";  // Default image
-  product: any = {};  // Assuming product is an object for simplicity
+  description: string = '';
+  image_url: string = "com.jpg";
+  product: any = {};
 
   constructor(
     private productService: ProductService,
     private router: Router,
     private categoryService: categoryService,
     private brandService: BrandService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.DsBrand();
@@ -37,6 +38,7 @@ export class CreateProductComponent {
   get photosUrl(): string {
     return this.productService.PhotosUrl;
   }
+
 
   DsDanhMuc() {
     this.categoryService.getCategory().subscribe(data => {
@@ -59,46 +61,56 @@ export class CreateProductComponent {
       category_id: this.category_id,
       price: this.price,
       quantity: this.quantity,
-      image_url: this.image_url, 
+      description: this.description,
+      image_url: this.image_url,
     };
 
-    console.log(val);
+    console.log('Sending data to backend:', val);
 
-    this.productService.postProduct(val).subscribe(res => {
-      alert('Thêm thành công!');
-      this.router.navigate(['/admin/products/list/', 0]);
-    }, err => {
-      console.error('Error:', err);
-      alert('Đã xảy ra lỗi trong khi tạo sản phẩm');
-    });
+    this.productService.postProduct(val).subscribe(
+      res => {
+        console.log('Response from backend:', res);
+        alert('Thêm thành công!');
+        this.router.navigate(['/admin/products/list/', 0]);
+      },
+      err => {
+        console.error('Error:', err);
+        if (err.error && err.error.message) {
+          alert('Lỗi từ server: ' + err.error.message);
+        } else {
+          alert('Đã xảy ra lỗi trong khi tạo sản phẩm');
+        }
+      }
+    );
   }
 
-  
+
+
   uploadPhoto(event: any) {
     var file = event.target.files[0];
     if (!file) {
       alert('Vui lòng chọn một tệp!');
       return;
     }
-  
+
     const formData: FormData = new FormData();
     formData.append('file', file, file.name);
-  
+
     this.productService.taiAnh(formData).subscribe((data: any) => {
-      // Assuming 'data' is the image name or URL returned from the backend
-      if (data) {
-        this.image_url = data.toString();  // Store the image URL returned by the backend
-        console.log('Response data:', data);
-        // Make sure the photosUrl is also correctly set
-        this.product.PathAnh = this.productService.PhotosUrl + "/" + this.image_url;
-      } else {
-        alert('Lỗi tải ảnh');
+      console.log('Dữ liệu trả về:', data);
+
+      if (typeof data === 'string') {
+        this.image_url = data;
       }
+      else if (data && data.fileName) {
+        this.image_url = data.fileName;
+      }
+      this.product.image_url = this.image_url;
+      this.product.PathAnh = this.productService.PhotosUrl + "/" + this.image_url;
+      console.log("Đường dẫn ảnh đầy đủ:", this.product.PathAnh);
     }, error => {
       console.error('Lỗi upload ảnh:', error);
       alert('Không thể tải ảnh lên');
     });
   }
-
-  
 }

@@ -1,233 +1,252 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { forkJoin, Observable, of } from 'rxjs';
+import { switchMap, map, catchError } from 'rxjs/operators';
 import { Product } from '../../../Models/product';
-import { ProductService } from '../../../Service/productService';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { Brand } from '../../../Models/brand';
+import { Categories } from '../../../Models/categories';
 import { Order } from '../../../Models/order';
-import { User } from '../../../Models/users';
+import { ProductService } from '../../../Service/productService';
+import { categoryService } from '../../../Service/categoryService';
+import { BrandService } from '../../../Service/brand-service';
+import { CartService, CartItem } from '../../../Service/cart.service';
 import { userService } from '../../../Service/userService';
-import { OrderDetails } from '../../../Models/order-details';
 import { OrderService } from '../../../Service/order-service';
 import { OrderDetailService } from '../../../Service/order-detail-service';
+
+declare var bootstrap: any;
+
+export interface GroupedProduct {
+  category_id: number;
+  category_name: string;
+  products: Product[];
+  brands: Brand[];
+  visibleProducts: Product[];
+  currentIndex: number;
+  productsPerView: number;
+}
 
 @Component({
   selector: 'app-list-product',
   templateUrl: './list-product.component.html',
-  styleUrl: './list-product.component.css'
+  styleUrls: ['./list-product.component.css'],
 })
-export class ListProductComponent {
-  DSProduct: Product[] = [];
-  products: Product[] = [];
-  productSearch: Product[] = [];
-  product:Product;
-  searchText:string;
+export class ListProductComponent implements OnInit {
+  productGroups: GroupedProduct[] = [];
+  user_id: number | null = null;
+  dangThemSua: boolean = false;
+  selectedItem: any = null;
+  showSuccessMessage: boolean = false;
+  isBanking: boolean = false;
+  bankInfo: string | null = null;
+  transferInstructions: string | null = null;
+  qrCodeUrl: string = 'assets/img/maQR2.jpg';
+  errorMessage: string | null = null;
 
-  paginatedProducts: Product[] = [];
-  currentPage: number = 1;
-  pageSize: number = 8; // Number of products per page
-  totalPages: number = 0;
-
-  order_id: number;
-  customer_id: number;
-  order_status: string = "Đang xử lý";
-  create_at: Date;
-  total_amount: number;
-  order: Order;
-  product_id : number;
-  price: number;
-  number_of_products: number =1;
-  total_money: number;
-  user:User;
-  customer_name:string;
-  dangThemSua:boolean= false;
-  user_id : number;
-  
   constructor(
-    private productService: ProductService, 
-    private router: Router, 
-    private route: ActivatedRoute,
-    public userService : userService,
-    private orderService : OrderService,
-    private orderDetailService : OrderDetailService
+    private productService: ProductService,
+    private categoryService: categoryService,
+    private brandService: BrandService,
+    private router: Router,
+    public userService: userService,
+    private orderService: OrderService,
+    private orderDetailService: OrderDetailService,
+    private cartService: CartService,
+    private route: ActivatedRoute
   ) {}
 
-  // Hàm được gọi khi component được khởi tạo
   ngOnInit() {
-    this.layDSProduct(); // Gọi hàm tải sản phẩm khi component khởi tạo
-    this.route.queryParams.subscribe(params => {
-      this.searchText = params['searchText'] || '';
-      this.timkiem();
-      console.log(this.searchText);
-    });
-
-    const currentUser = this.userService.getCurrentUser();  
+    const currentUser = this.userService.getCurrentUser();
     if (currentUser) {
-      this.user_id = currentUser.user_id;  
-      this.customer_name = currentUser.username;
-    } else {
-      console.log('Không có người dùng đăng nhập');
-      
+      this.user_id = currentUser.user_id;
     }
-  }
-
-  updatePagination(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedProducts = this.products.slice(start, end); // Pagination should be on 'products'
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePagination();
-    }
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePagination();
-    }
-  }
-
-  // Lấy danh sách sản phẩm từ ProductService
-  layDSProduct() {
-    this.productService.getProducts().subscribe(data => {
-      this.DSProduct = data; // Gán dữ liệu lấy được vào DSProduct
-      this.products = this.DSProduct.map(product => {
-        product.PathAnh = this.productService.PhotosUrl + "/" + product.image_url; // Gán ảnh cho mỗi sản phẩm
-        this.layDetailsSP(product.product_id);
-        return product; // Trả về mỗi sản phẩm đã được cập nhật ảnh
-      });
-      this.totalPages = Math.ceil(this.products.length / this.pageSize); // Pagination based on 'products'
-      this.updatePagination(); // Update pagination based on 'products'
+    this.route.queryParams.subscribe((params) => {
+      const keyword = params['search'] || '';
+      this.loadAllProductsGroupedByCategory(keyword);
     });
   }
 
-  timkiem() {
-    this.productService.timkiem(this.searchText).subscribe({
-      next: (productSearch) => {
-        this.productSearch = productSearch.map(product => {
-          product.PathAnh = this.productService.PhotosUrl + "/" + product.image_url;
-          return product;
-        });
-        this.totalPages = Math.ceil(this.productSearch.length / this.pageSize); // Recalculate total pages after search
-        this.currentPage = 1; // Reset to the first page after search
-        this.updatePagination();
-      },
-      error: (err) => {
-        console.error('Đã xảy ra lỗi khi tìm kiếm sản phẩm:', err);
-      }
-    });
-  }
+  loadAllProductsGroupedByCategory(key: string = '') {
+  this.categoryService.getCategory().subscribe((categories) => {
+    if (!categories?.length) return;
 
-    // Lấy chi tiết sản phẩm theo ID
-    layDetailsSP(id: number) {
-      this.productService.getProductDetails(id).subscribe({
-        next: (data) => {
-         this.product = data;
-         console.log(id); 
-          console.log('Sản phẩm chi tiết:', data); 
-          data.PathAnh = this.productService.PhotosUrl + "/" + data.image_url ;
-  
-           // Gán thông tin chi tiết sản phẩm
-          this.product_id = data.product_id; // ID sản phẩm
-          this.price = data.price;          // Giá sản phẩm
-          this.total_amount = data.price;   // Tổng tiền mặc định bằng giá sản phẩm
-        },
-        error: (err) => {
-          console.error('Lỗi khi lấy chi tiết sản phẩm:', err);
-        }
-      });
-    }
+    const groupRequests = categories.map((category) =>
+      forkJoin({
+        category: of(category),
+        products: this.productService.getByIdDM(category.category_id),
+        brands: this.brandService.getBrand_idDM(category.category_id)
+      })
+    );
 
-    themDon() {
-      // Kiểm tra xem người dùng đã đăng nhập chưa
-      const currentUser = this.userService.getCurrentUser();
-      
-      if (!currentUser) {
-        // Nếu chưa đăng nhập, yêu cầu người dùng đăng nhập và điều hướng đến trang đăng nhập
-        alert('Vui lòng đăng nhập để tiếp tục đặt hàng.');
-        this.router.navigate(['/home/login']); // Điều hướng đến trang đăng nhập
-        return; // Dừng lại và không hiển thị form đặt hàng
-      } else{
-        // Nếu đã đăng nhập, tiếp tục xử lý đặt hàng
-        this.user_id = currentUser.user_id;  // Lấy user_id của người dùng đã đăng nhập
-        this.customer_name = currentUser.username; // Lấy tên người dùng nếu cần
-        
-        // Khởi tạo đơn hàng mới
-        this.order = {
-          order_id: 0,
-          customer_id: this.user_id, // Gán user_id cho đơn hàng
-          order_status: 'Đang xử lý',  // Cập nhật trạng thái đơn hàng ban đầu
-          create_at: new Date(),  // Thời gian tạo đơn hàng
-          total_amount: 0  // Tổng tiền mặc định (sẽ tính toán sau)
-      };
-    
-      this.dangThemSua = true;  // Thiết lập flag để mở form thêm đơn hàng
-      }
-    
-      
-    }
-    
-    
-  
-    muaNgay(paymentForm: any) { 
-      // Kiểm tra nếu form không hợp lệ thì không làm gì
-      if (!paymentForm.valid) {
-        alert('Vui lòng điền đầy đủ thông tin!');
-        return; // Dừng lại nếu form không hợp lệ
-      }
+    forkJoin(groupRequests).subscribe((results: {
+      category: Categories;
+      products: Product[];
+      brands: Brand[];
+    }[]) => {
+      this.productGroups = results
+        .map(({ category, products, brands }) => {
+          if (key.trim()) {
+            const lowerKey = key.toLowerCase();
+            products = products.filter(p =>
+              p.product_name.toLowerCase().includes(lowerKey)
+            );
+          }
 
-      // Tính tổng tiền cho chi tiết đơn hàng
-      this.total_money = this.price * this.number_of_products;
-      
-      // Dữ liệu đơn hàng
-      const orderData = {
-        customer_id: this.user_id,
-        order_status: this.order_status,
-        create_at: new Date(),
-        total_amount: this.total_money,
-      };
-    
-      console.log(orderData);
-      
-      // Gửi yêu cầu tạo đơn hàng
-      this.orderService.postOrder(orderData).subscribe({
-        next: (order: Order) => {
-          // Sử dụng order_id từ phản hồi API
-          const createdOrderId = order.order_id;
-          console.log('Order created with ID:', createdOrderId);
-          
-          // Dữ liệu chi tiết đơn hàng
-          const orderDetailData = {
-            order_id: createdOrderId,
-            product_id: this.product_id,
-            price: this.price,
-            number_of_products: this.number_of_products,
-            total_money: this.total_money,
+          products.forEach(p => p.PathAnh = `${this.productService.PhotosUrl}/${p.image_url}`);
+          const productsPerView = 5;
+
+          return {
+            category_id: category.category_id,
+            category_name: category.category_name,
+            products,
+            brands,
+            productsPerView,
+            currentIndex: 0,
+            visibleProducts: products.slice(0, productsPerView),
           };
-    
-          // Gửi yêu cầu tạo chi tiết đơn hàng
-          this.orderDetailService.postOrderDetail(orderDetailData).subscribe({
-            next: () => {
-              alert('Đặt hàng thành công.');
-              console.log('Dữ liệu gửi đến API:', orderDetailData);
-            },
-            error: (err) => {
-              alert('Lỗi khi tạo chi tiết đơn hàng.');
-            },
-          });
-        },
-        error: (err) => {
-          alert('Lỗi khi tạo đơn hàng.');
-        },
-      });
-    }
-    
+        })
+        .filter(group => group.products.length > 0);
+    });
+  });
+}
 
-    dong(){
-      this.dangThemSua=false;
-      // this.layDSTour();
+  navigateCarousel(group: GroupedProduct, direction: 'next' | 'prev') {
+    if (direction === 'next') {
+      group.currentIndex += group.productsPerView;
+    } else if (direction === 'prev') {
+      group.currentIndex -= group.productsPerView;
     }
+    const start = group.currentIndex;
+    const end = start + group.productsPerView;
+    group.visibleProducts = group.products.slice(start, end);
+  }
+
+  addToCart(product: Product): void {
+    const currentUser = this.userService.getCurrentUser();
+    if (!currentUser) {
+      this.errorMessage = 'Vui lòng đăng nhập!';
+      this.router.navigate(['/home/login']);
+      return;
+    }
+    if (!product || !product.product_id) {
+      console.error('Sản phẩm không hợp lệ:', product);
+      return;
+    }
+    const cartItem: CartItem = {
+      user_id: currentUser.user_id,
+      product_id: product.product_id,
+      quantity: 1,
+    };
+    this.cartService.addToCart(cartItem).subscribe({
+      next: () => alert(`Đã thêm "${product.product_name}" vào giỏ hàng.`),
+      error: () => (this.errorMessage = 'Thêm vào giỏ hàng thất bại!'),
+    });
+  }
+
+  themDon(product: Product) {
+    const currentUser = this.userService.getCurrentUser();
+    if (!currentUser) {
+      this.errorMessage = 'Vui lòng đăng nhập để đặt hàng!';
+      this.router.navigate(['/home/login']);
+      return;
+    }
+    this.user_id = currentUser.user_id;
+    this.selectedItem = {
+      product: product,
+      quantity: 1,
+      PathAnh: product.PathAnh || 'assets/images/default-image.jpg',
+      price: product.price,
+      total_amount: product.price * 1,
+    };
+    this.dangThemSua = true;
+    this.errorMessage = null;
+  }
+
+  muaNgay(paymentForm: any) {
+    if (!paymentForm.valid) {
+      this.errorMessage = 'Vui lòng điền đầy đủ thông tin hợp lệ!';
+      return;
+    }
+
+    const formValue = paymentForm.value;
+
+    this.isBanking = formValue.payment === 'Banking';
+
+  
+    const orderStatus = this.isBanking ? 'Chờ xác nhận' : 'Đang xử lý';
+
+    const orderData = {
+      user_id: this.user_id!,
+      full_name: formValue.fullname,
+      order_status: orderStatus,
+      create_at: new Date(),
+      total_amount: this.selectedItem.total_amount,
+      address: formValue.address,
+      phone: formValue.phone,
+      payment_method: formValue.payment,
+    };
+    
+    this.orderService.postOrder(orderData).subscribe({
+      next: (order: Order) => {
+        const createdOrderId = order.order_id;
+        const orderDetailData = {
+          order_id: createdOrderId,
+          product_id: this.selectedItem.product.product_id,
+          product_name: this.selectedItem.product.product_name,
+          imagePath: this.selectedItem.product.image_url,
+          price: this.selectedItem.product.price,
+          number_of_products: this.selectedItem.quantity,
+          total_money: this.selectedItem.total_amount,
+        };
+        this.orderDetailService.postOrderDetail(orderDetailData).subscribe({
+          next: () => {
+            this.showSuccessMessage = true;
+            setTimeout(() => {
+              if (this.isBanking) {
+                this.bankInfo =
+                  'Ngân hàng: MBbank\nSố tài khoản: 0337431736\nChủ tài khoản: Nguyễn Đặng Thành Huy';
+                this.transferInstructions = `Vui lòng quét mã QR, nhập ${this.selectedItem.total_amount.toLocaleString(
+                  'vi-VN'
+                )} VNĐ, nội dung "DH${createdOrderId}" trong 24h.`;
+                this.showSuccessMessage = false;
+              } else {
+                this.closeModal();
+                this.router.navigate([`/home/user/viewOH/${this.user_id}`]);
+              }
+            }, 2000);
+          },
+          error: () => (this.errorMessage = 'Lỗi khi tạo chi tiết đơn hàng!'),
+        });
+      },
+      error: (error) => {
+        this.errorMessage =
+          error.status === 400
+            ? 'ID người dùng không hợp lệ!'
+            : 'Lỗi khi tạo đơn hàng!';
+        this.closeModal();
+      },
+    });
+  }
+
+  dong() {
+    this.dangThemSua = false;
+    this.selectedItem = null;
+    this.showSuccessMessage = false;
+    this.isBanking = false;
+    this.bankInfo = null;
+    this.transferInstructions = null;
+    this.errorMessage = null;
+    this.closeModal();
+  }
+
+  closeModal() {
+    const modal = document.getElementById('exampleModal');
+    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+    if (bootstrapModal) bootstrapModal.hide();
+  }
+
+  confirmTransfer() {
+    this.closeModal();
+    this.router.navigate([`/home/user/viewOH/${this.user_id}`]);
+  }
 }

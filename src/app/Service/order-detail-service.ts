@@ -1,13 +1,13 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { User } from '../Models/users';
+  import { HttpClient, HttpHeaders } from '@angular/common/http';
+  import { Injectable } from '@angular/core';
+  import { Observable } from 'rxjs';
+  import { User } from '../Models/users';
 
-@Injectable({
+  @Injectable({
   providedIn: 'root'
 })
 export class OrderDetailService {
-  private apiUrl = 'http://localhost:5038/api';
+  private apiUrl = 'https://localhost:7139/api/Order_Details';
 
   private httpOptions = {
     headers: new HttpHeaders({
@@ -17,32 +17,27 @@ export class OrderDetailService {
 
   constructor(private http: HttpClient) {}
 
-    getOrderTails():Observable<any> {
-        return this.http.get<any>(this.apiUrl+'/Order_Details');
-    }
+  getOrderTails(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
 
-    // getOrderDetailById(id: number): Observable<any> {
-    //     const url = `${this.apiUrl}/Order_Details/order_id/${id}`;
-    //     return this.http.get<any>(url, this.httpOptions);
-    // }
+  getOrderDetailById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`, this.httpOptions);
+  }
 
-    getOrderDetailById(id: number): Observable<any> {
-      const url = `${this.apiUrl}/Order_Details/order_id/${id}`;
-      return this.http.get<any>(url, this.httpOptions);
-    }
+  getOrderDetailByOrderId(orderId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/order_id/${orderId}`, this.httpOptions);
+  }
 
-    getOrderDetailByOrderId(id: number): Observable<any> {
-      const url = `${this.apiUrl}/Order_Details/orderID/${id}`;
-      return this.http.get<any>(url, this.httpOptions);
-    }
+  postOrderDetail(body: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, body, this.httpOptions);
+  }
 
-    getOrderDetailId(id: number): Observable<any> {
-      const url = `${this.apiUrl}/Order_Details/${id}`;
-      return this.http.get<any>(url, this.httpOptions);
-    }
+  deleteOrderDetailsByOrderId(orderId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/order_id/${orderId}`);
+  }
 
-    postOrderDetail(body: any){
-      const url = `${this.apiUrl}/Order_Details`;
-      return this.http.post(url, body);
-    }
+  deleteOrderDetailById(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

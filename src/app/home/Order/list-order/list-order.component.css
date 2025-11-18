@@ -85,7 +85,6 @@
   margin-top: 50px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .orders-container {
     padding: 15px;

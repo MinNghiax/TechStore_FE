@@ -1,226 +1,252 @@
-.outer-container {
-    background-color: #f0f0f0; /* Màu nền bên ngoài */
-    padding: 20px; /* Khoảng cách giữa nội dung và viền */
-}
-.one {
-    background-color: white;
-    margin-top: 20px;
-    margin-left: 35px;
-    margin-right: 35px;
-    border-radius: 10px;
-    display: flex; 
-    gap: 20px; 
-    padding-left: 10px;
-    /* padding-top: 10px;
-    
-    padding-bottom: 10px; */
-  }
-.one-item {
-    display: flex; 
-    align-items: center; 
-    gap: 20px; 
-  }
-p {
-    margin-top: 10px;
-    font-size: 16px; 
-    color: #333; 
-    font-weight: bold;
-  }
-
-  .user-details p {
-    margin: 0; /* Xóa margin mặc định của thẻ p */
-    padding: 0; /* Xóa padding mặc định nếu có */
-}
-  .container-main{
-    /* background-color: white; */
-    margin-top: 10px;
-    margin-left: 35px;
-    margin-right: 35px;
-    border-radius: 10px;
-}
-.two-info{
-    background-color: white;
-    border-radius: 10px;
-    padding: 10px 10px;
-    width: 320px;
-}
-.user-profile{
-    display: flex; 
-    align-items: center; 
-    gap: 20px; 
-}
-
-.user-profile a {
-    text-decoration: none;
-    font-size: small;
-    background-color: rgb(214, 214, 255);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    padding: 3px 3px;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.user-profile a:hover {
-    background-color: rgb(247, 214, 220);
-    transform: translateY(-5px); /* Di chuyển phần tử lên 5px */
-}
-
-.two-info img{
-    width: 50px;
-    height: 50px;
-    border-radius: 40px;
-}
-.detail-info{
-    background-color: pink;
-    margin-top: 10px;
-    padding: 10px 10px;
-    border-radius: 10px;
-    
-}
-.detail-infox{
-    display: flex; 
-    align-items: center; 
-    gap: 20px;
-}
-
-.detail-infox img{
-    height: 90px;
-    width: 50x;
-}
-.detail-info button{
-    background-color: rgb(230, 79, 79);
-    border-radius: 10px;
-    border: none;
-    padding: 6px 6px;
-    font-weight: bold;
-    color: white;
-}
-.menu-bar{
-    background-color: white;
-    width: 320px;
-    margin-top: 20px;
-    border-radius: 10px;
-    
-}
-.menu-bar-main a {
-    display: block; /* Đảm bảo mỗi <a> nằm trên một dòng */
-    margin-bottom: 10px; /* Khoảng cách giữa các thẻ a */
-    padding: 10px; /* Padding mặc định */
-    text-decoration: none; /* Xóa gạch chân mặc định của liên kết */
-    color: inherit; /* Đảm bảo màu chữ không thay đổi khi hover */
-    transition: background-color 0.1s ease, border-left 0.1s ease; /* Thêm hiệu ứng chuyển động cho background-color và border-left */
-}
-
-.menu-bar-main a:hover {
-    background-color: pink; /* Màu nền khi hover */
-    border-left: 3px solid palevioletred; /* Border trái khi hover */
-}
-.menu-bar-main a i {
-    font-size: 20px; /* Kích thước icon */
-    margin-right: 10px; /* Khoảng cách giữa icon và text */
-    vertical-align: middle; /* Căn chỉnh icon với văn bản */
-}
-
-.menu-bar-main a p {
-    display: inline; /* Đảm bảo text nằm ngang với icon */
-    vertical-align: middle; /* Căn chỉnh text với icon */
-    margin: 0; /* Xóa margin mặc định */
-    font-size: 15px; /* Cỡ chữ của text */
-    padding-left: 10px;
-    font-weight: bold;
-}
-
-
+/* Container chính */
 .container-main {
-    display: flex; /* Sử dụng flexbox để các phần tử con nằm ngang */
-    gap: 20px; /* Khoảng cách giữa các .two */
-}
-.twox{
-    background-color: white;
-    width: 890px;
-    border-radius: 10px;
-}
-.twoo{
-    background-color: white;
-    margin-bottom: 5px;
-    padding: 10px 10px;
-    border-radius: 10px;
-}
-.twoo a {
-    margin-right: 70px; /* Khoảng cách bên phải giữa các thẻ <a> */
-    text-decoration: none; /* Xóa gạch chân mặc định */
-    color: black; /* Màu chữ */
-    font-weight: bold; /* Tô đậm chữ */
-}
-.twoo a:hover{
-    color: rgb(197, 10, 10);
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
-/* Xóa khoảng cách cho thẻ cuối cùng (tùy chọn) */
-.twoo a:last-child {
-    margin-right: 0;
-}
-.twoo a:first-child{
-    margin-left: 60px;
-}
-.twoxx{
-    display: flex; /* Sử dụng flexbox để căn ngang */
-    align-items: center; /* Căn chỉnh các mục theo chiều dọc */
-    gap: 20px; /* Khoảng cách giữa các thẻ <p> */
-    margin-left: 20px;
-    border-bottom: 1px solid gray;
-}
-.anh img{
-    width: 100px;
-    height: 100px;
-    margin-top: 20px;
-}
-.dt-pr{
-    display: flex; /* Sử dụng flexbox để căn ngang */
-    align-items: center; /* Căn chỉnh các mục theo chiều dọc */
-    gap: 20px; /* Khoảng cách giữa các thẻ <p> */
-}
-.dt{
-    display: flex; /* Sử dụng flexbox để căn ngang */
-    align-items: center; /* Căn chỉnh các mục theo chiều dọc */
-    gap: 280px; /* Khoảng cách giữa các thẻ <p> */
-    padding-bottom: 10px;
-}
-.an{
-    display: flex; /* Sử dụng flexbox để căn ngang */
-    align-items: center; /* Căn chỉnh các mục theo chiều dọc */
-    gap: 450px; /* Khoảng cách giữa các thẻ <p> */
-    padding: 10px 10px;
-    border-top: 1px solid gray;
-}
-.an button{
-    background-color: rgb(230, 79, 79);
-    border-radius: 10px;
-    border: none;
-    padding: 6px 6px;
-    font-weight: bold;
-    color: white;
-    width: 80px;
+/* Thanh breadcrumb */
+.breadcrumb {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #666;
 }
 
+.breadcrumb-link {
+  color: #007bff;
+  text-decoration: none;
+}
 
-    /* Breadcrumb Container */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        padding: 10px 20px;
-        border-radius: 5px;
-    
-      }
-    
-      
-      .breadcrumb-link {
-        font-size: 16px;
-        font-weight: 500;
-        color: #0275d8; /* Blue color for the link */
-        text-decoration: none; /* Remove underline from links */
-        transition: color 0.3s ease; /* Smooth transition on hover */
-      }
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
 
-     
+/* Thông tin người dùng */
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  background-color: #f9f9f9;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+}
+
+.profile-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #007bff;
+}
+
+.user-info > div:first-of-type p {
+  margin: 2px 0;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.user-info > div:first-of-type p:nth-child(2) {
+  font-weight: 400;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Các hành động của người dùng */
+.actions {
+  margin-left: auto;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions a {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s ease;
+}
+
+.actions a:hover {
+  color: #0056b3;
+}
+
+.actions a i {
+  font-size: 16px;
+}
+
+/* Tiêu đề đơn hàng */
+h3 {
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 24px;
+  color: #222;
+}
+
+/* Card đơn hàng */
+.order-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.05);
+}
+
+/* Header đơn hàng */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.order-header span {
+  margin-right: 15px;
+  white-space: nowrap;
+}
+
+.order-header strong {
+  color: #28a745;
+}
+
+/* Bảng chi tiết đơn hàng */
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.order-table th,
+.order-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.order-table th {
+  background-color: #f1f1f1;
+  font-weight: 700;
+  color: #333;
+}
+
+.order-table img {
+  border-radius: 6px;
+  object-fit: contain;
+  max-height: 60px;
+}
+
+/* Nút thao tác đơn hàng */
+.order-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.order-actions button {
+  padding: 8px 18px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 600;
+}
+
+.order-actions button.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.order-actions button.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.order-actions button.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.order-actions button.btn-danger:hover {
+  background-color: #a71d2a;
+}
+
+/* Thông báo khi chưa có đơn hàng */
+ng-template#noOrders p {
+  font-style: italic;
+  color: #666;
+  text-align: center;
+  margin-top: 40px;
+  font-size: 16px;
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.actions a {
+  text-decoration: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s ease, transform 0.2s ease;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background-color: transparent;
+  user-select: none;
+}
+
+.actions a:hover {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.1);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.actions a i {
+  font-size: 16px;
+  color: #007bff;
+  transition: color 0.3s ease;
+}
+
+.actions a:hover i {
+  color: #0056b3;
+}
+
+.actions a p {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Đảm bảo khoảng cách hợp lý giữa các link, kể cả dấu phân cách */
+.actions a:not(:last-child)::after {
+  content: "|";
+  margin-left: 10px;
+  color: #ccc;
+  user-select: none;
+}
+
+.actions a:last-child::after {
+  content: "";
+}

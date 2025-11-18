@@ -1,124 +1,174 @@
-
-
-<!-- Modal -->
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+<h2>Quản lý đơn hàng</h2>
+<!-- Modal Cập nhật đơn hàng -->
+<div class="modal fade" id="addModal" tabindex="-1"
+  aria-labelledby="addModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-
-      <!-- Modal Header -->
       <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Cập nhật Hóa đơn</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="addModalLabel">Cập nhật đơn hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"
+          aria-label="Close"></button>
       </div>
-
-      <!-- Modal Body -->
-      <div class="modal-body" >
-        <form *ngIf="selected"  (ngSubmit)="suaDonHang()">
-                <div class="mb-3">
-                  <label for="customer_name" class="form-label">Tên khách hàng</label>
-                  <input type="text" class="form-control" id="customer_name" [(ngModel)]="customer_name" name="customer_name" readonly/>
-                </div> 
-                <div class="mb-3">
-                    <label for="order_status" class="form-label">Trạng thái đơn hàng</label>
-                    <input type="text" class="form-control" id="order_status" [(ngModel)]="status" name="order_status" readonly>
-                </div>
-                <div class="mb-3">
-                    <label for="create_at">Ngày đặt hàng:</label>
-                    <input type="date" class="form-control" id="create_at" [(ngModel)]="create_at" name="create_at" required/>
-                </div>
-                <div class="mb-3">
-                    <label for="total_amount" class="form-label">Giá</label>
-                    <input type="number" class="form-control" id="total_amount" [(ngModel)]="total_amount" name="total_amount" required>
-                </div>
-                <button style="margin-left: 180px;" type="submit" class="btn btn-danger" data-bs-dismiss="modal" >Cập nhật</button>
+      <div class="modal-body">
+        <form *ngIf="selected" (ngSubmit)="suaDonHang()"
+          style="display: flex; flex-direction: column; gap: 10px;">
+          <label>
+            Tên khách hàng:
+            <input type="text" [(ngModel)]="customer_name" name="customer_name"
+              readonly />
+          </label>
+          <label>
+            Trạng thái đơn hàng:
+            <select [(ngModel)]="order_status" name="order_status">
+              <option [value]="order_status">{{ order_status }}</option>
+              <option *ngFor="let status of orderStatuses[order_status]"
+                [value]="status">{{ status }}</option>
+            </select>
+          </label>
+          <label>
+            Ngày đặt hàng:
+            <input type="date" [(ngModel)]="create_at" name="create_at"
+              required />
+          </label>
+          <label>
+            Tổng tiền:
+            <input type="number" [(ngModel)]="total_amount" name="total_amount"
+              required />
+          </label>
+          <label>
+            Địa chỉ:
+            <input type="text" [(ngModel)]="address" name="address" />
+          </label>
+          <label>
+            Số điện thoại:
+            <input type="tel" [(ngModel)]="phone" name="phone"
+              pattern="[0-9]{10}" />
+          </label>
+          <label>
+            Phương thức thanh toán:
+            <select [(ngModel)]="payment_method" name="payment_method">
+              <option value="Cash">Tiền mặt</option>
+              <option value="Banking">Chuyển khoản</option>
+              <option value="COD">Thanh toán khi nhận hàng</option>
+            </select>
+          </label>
+          <button type="submit"
+            style="margin-top: 20px; padding: 6px 12px; background-color: #d9534f; color: white; border: none; border-radius: 4px;">
+            Cập nhật
+          </button>
         </form>
       </div>
     </div>
   </div>
 </div>
-  <!-- Modal Body -->
-  <!-- <button style="margin-left: 50px; margin-top: 10px;" type="button" class="them btn btn-danger"  [routerLink]="['/admin/donhang/create']">Thêm đơn hàng</button> -->
-   <!-- Thêm đơn hàng -->
-  <!-- Nút mua hàng -->
+
 <div class="product-actions">
   <div class="create-button">
-    <button  style="margin-left: 50px; margin-top: 10px;" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="themDon()">Thêm đơn hàng</button>
+    <button class="btn btn-danger"
+      style="margin-left:50px;margin-top:10px"
+      data-bs-toggle="modal"
+      data-bs-target="#exampleModal"
+      (click)="resetForm()">+ Thêm đơn hàng</button>
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal" tabindex="-1"
+      aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog">
-        <div class="modal-content">
+        <form #orderForm="ngForm" (ngSubmit)="addProductToOrder(orderForm)"
+          class="modal-content">
+
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel" style="margin-left: 20px;">Thêm đơn hàng</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="margin-bottom: 20px;" (click)="dong()"></button>
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Thêm đơn
+              hàng</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
           </div>
+
           <div class="modal-body">
-            <div class="form-group">
-              <label for="address">Khách hàng</label>
-              <select class="form-control" [(ngModel)]="user_id" name="user_id" >
-                <option *ngFor="let u of DSUser" [value]="u.user_id">
-                  {{ u.username }}
-                </option>
+            <div class="mb-3">
+              <label class="form-label">Khách hàng</label>
+              <select class="form-select"
+                name="user_id"
+                required
+                [(ngModel)]="user_id">
+                <option value disabled selected>-- Chọn khách hàng --</option>
+                <option *ngFor="let u of DSUser" [value]="u.user_id">{{
+                  u.username }}</option>
               </select>
-              <br>
             </div>
-            <div class="form-group">
-              <label for="address">Chọn sản phẩm</label>
-              <select class="form-control" [(ngModel)]="product_id" name="product_id" (change)="layDetailsSP(product_id)">
-                <option *ngFor="let t of DsProduct" [value]="t.product_id">
-                  {{ t.product_name }}
-                </option>
+
+            <div class="mb-3">
+              <label class="form-label">Sản phẩm</label>
+              <select class="form-select"
+                name="product_id"
+                required
+                [(ngModel)]="product_id"
+                (change)="layDetailsSP(product_id)">
+                <option value disabled>-- Chọn sản phẩm --</option>
+                <option *ngFor="let p of DsProduct" [value]="p.product_id">{{
+                  p.product_name }}</option>
               </select>
-              <br>
             </div>
-            <div class="form-group">
-              <label for="address">Địa chỉ giao hàng</label>
-              <input style="margin-left: 30px; border-radius: 8px;"  type="text" id="address" name="address" placeholder="Nhập địa chỉ giao hàng" required>
-              <br>
-              <br>
+
+            <div class="mb-3">
+              <label class="form-label">Địa chỉ giao hàng</label>
+              <input class="form-control"
+                name="address"
+                required
+                [(ngModel)]="address"
+                placeholder="Nhập địa chỉ giao hàng">
             </div>
-            <div class="form-group">
-              <label for="phone">Số điện thoại</label>
-              <input style="margin-left: 30px; border-radius: 8px;" type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" pattern="[0-9]{10}" required>
-              <br>
-              <br>
+
+            <div class="mb-3">
+              <label class="form-label">Số điện thoại</label>
+              <input class="form-control"
+                name="phone"
+                required
+                pattern="[0-9]{10}"
+                [(ngModel)]="phone"
+                placeholder="Nhập 10 số điện thoại">
             </div>
-            <div class="form-group">
-              <label for="payment">Phương thức thanh toán</label>
-              <select id="payment" name="payment" required>
-                <option value="">Chọn một phương thức thanh toán</option>
-                <option value="credit_card">Thanh toán bằng thẻ tín dụng</option>
+
+            <div class="mb-3">
+              <label class="form-label">Phương thức thanh toán</label>
+              <select class="form-select"
+                name="payment_method"
+                required
+                [(ngModel)]="payment_method">
+                <option value disabled selected>-- Chọn phương thức --</option>
                 <option value="bank_transfer">Chuyển khoản</option>
-                <option value="cash_on_delivery">Thanh toán khi nhận hàng</option>
+                <option value="cash_on_delivery">Thanh toán khi nhận
+                  hàng</option>
               </select>
             </div>
           </div>
+
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            <button type="submit" class="btn btn-primary" (click)="addProductToOrder()">Thêm</button>
+            <button type="button" class="btn btn-secondary"
+              data-bs-dismiss="modal">Đóng</button>
+            <button type="submit"
+              class="btn btn-primary"
+              [disabled]="orderForm.invalid || isLoading">
+              {{ isLoading ? 'Đang lưu...' : 'Thêm' }}
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
-
-
 <!-- Search Section -->
 <div class="row mb-3">
   <div class="col-md-6">
-    <input 
-      type="text" 
-      class="form-control" 
-      [(ngModel)]="searchText" 
-      />
-    <button type="button" (click)="timkiem()"><i class="fas fa-chevron-left"></i> Tìm kiếm</button>
+    <input type="text" class="form-control" [(ngModel)]="searchText" />
+    <button type="button" (click)="timkiem()"><i class="fas fa-search"></i> Tìm
+      kiếm</button>
   </div>
 </div>
 
 <!-- Orders Table -->
-<div  class="container mt-3">
+<div class="container mt-3">
   <table class="table table-hover">
     <thead>
       <tr>
@@ -131,27 +181,39 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Loop through the filtered list of orders -->
-      <tr *ngFor="let donhang of orderSearch.length > 0 ? orderSearch : DSDonHang">
-        <td>{{ donhang.order_id }}</td>
-        <td>{{ donhang.customer_name }}</td>
+      <tr
+        *ngFor="let donhang of (orderSearch.length > 0 ? orderSearch : DSDonHang)">
+        <td data-label="Mã đơn hàng">{{ donhang.order_id }}</td>
+        <td data-label="Tên khách hàng">{{ donhang.full_name }}</td>
         <td>
-          <select [(ngModel)]="donhang.order_status" >
-            <option>{{donhang.order_status}}</option>
+          <select [(ngModel)]="donhang.selectedStatus"
+            name="status_{{donhang.order_id}}" [disabled]="isLoading">
+            <option [value]="donhang.order_status">{{ donhang.order_status}}</option>
             <option *ngFor="let status of orderStatuses[donhang.order_status]" [value]="status">{{ status }}</option>
           </select>
+          <button *ngIf="!isLoading" type="button"
+            class="btn btn-primary btn-sm" style="margin: 0 0 5px 5px;"
+            (click)="updateOrderStatus(donhang.order_id, donhang.selectedStatus)"
+            [disabled]="isLoading || donhang.selectedStatus === donhang.order_status">
+            <i class="fas fa-save"></i> Cập nhật
+          </button>
+          <div *ngIf="isLoading" class="loader" style="margin: auto;"></div>
         </td>
-        <td>{{ donhang.create_at | date:'MM/dd/yyyy'}}</td>
-        <td>{{ donhang.total_amount }}</td>
+        <td>{{ donhang.create_at | date:'MM/dd/yyyy' }}</td>
+        <td>{{ donhang.total_amount | currency:'VND':'symbol':'1.0-0' }}</td>
         <td class="sua-xoa">
-          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addModal" (click)="editDonhang(donhang)">
+          <button type="button" class="btn btn-info" data-bs-toggle="modal"
+            data-bs-target="#detailModal"
+            (click)="xemChiTietDon(donhang.order_id)">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+            data-bs-target="#addModal" (click)="editDonhang(donhang)">
             <i class="fas fa-pen"></i>
           </button>
-          <button type="button" class="btn btn-warning" (click)="xoaDsDonhang(donhang)" style="margin-left: 10px;">
+          <button type="button" class="btn btn-warning"
+            (click)="xoaDsDonhang(donhang)" style="margin-left: 10px;">
             <i class="fas fa-trash"></i>
-          </button>
-          <button class="btn btn-danger" (click)="updateOrderStatus(donhang.order_id, donhang.order_status)" style="margin-left: 10px;">
-            <i class="fas fas fa-floppy-disk"></i>
           </button>
         </td>
       </tr>
@@ -159,4 +221,67 @@
   </table>
 </div>
 
-  
+<!-- Modal Chi tiết đơn hàng -->
+<div class="modal fade" id="detailModal" tabindex="-1"
+  aria-labelledby="detailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content p-3">
+      <div class="modal-header"
+        style="background-color: #0d6efd; color: white;">
+        <h5 class="modal-title">Chi tiết đơn hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"
+          aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5>Thông tin người nhận</h5>
+            <p><strong>👤 Họ tên:</strong> {{ currentOrder?.full_name }}</p>
+            <p><strong>📞 SĐT:</strong> {{ currentOrder?.phone }}</p>
+            <p><strong>🏠 Địa chỉ:</strong> {{ currentOrder?.address }}</p>
+            <p><strong>💳 Thanh toán:</strong> {{ currentOrder?.payment_method
+              }}</p>
+          </div>
+          <div class="col-md-6">
+            <h5>Thông tin vận chuyển</h5>
+            <p>🚚 Đơn vị giao hàng: Giao Hàng Nhanh</p>
+            <p>👨‍💼 Shipper: Nguyễn Ngọc Mạnh</p>
+            <p>📞 SĐT: 0779421219</p>
+          </div>
+        </div>
+        <hr>
+        <h5>Sản phẩm trong đơn hàng</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered text-center align-middle">
+            <thead class="table-primary">
+              <tr>
+                <th>Ảnh</th>
+                <th>Sản phẩm</th>
+                <th>Đơn giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of DSChiTietDonHang">
+                <td>
+                  <img
+                    [src]="productService.PhotosUrl + '/' + item.product?.image_url"
+                    alt="Ảnh sản phẩm" width="70">
+                </td>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.price | currency:'VND' }}</td>
+                <td>{{ item.number_of_products }}</td>
+                <td>{{ item.total_money | currency:'VND' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-end">
+          <h5><strong>Tổng tiền:</strong> {{ currentOrder?.total_amount |
+            currency:'VND' }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

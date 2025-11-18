@@ -10,43 +10,42 @@ import { Router } from '@angular/router';
 })
 export class CreateCategoriesComponent {
 
-  name: string='';
-  them : boolean =true;
+  name: string = '';
+  them: boolean = true;
 
-  @Input() categories : Categories;
+  @Input() categories: Categories;
 
-  constructor (private categoryService: categoryService,
+  constructor(private categoryService: categoryService,
     private router: Router
-  ){
-   }
+  ) {
+  }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     this.name = this.categories.category_name;
   }
 
   themDanhmuc() {
-      const val = {
-        category_name: this.name,
-      };
+    const val = {
+      category_name: this.name,
+    };
 
-      console.log(val);
-      this.categoryService.addCategory(val).subscribe(
-        (result) => {
-          console.log('Thêm thành công', result);
-          alert('Thêm thành công!');
-          this.router.navigate(['/admin/categories/list']);
-        },
-        (error) => {
-          console.error('Có lỗi xảy ra khi thêm danh mục:', error);
-          // Hiển thị thêm thông tin lỗi chi tiết
-          if (error.error) {
-            console.error('Chi tiết lỗi:', error.error);
-          }
+    console.log(val);
+    this.categoryService.addCategory(val).subscribe(
+      (result) => {
+        console.log('Thêm thành công', result);
+        alert('Thêm thành công!');
+        this.router.navigate(['/admin/categories/list']);
+      },
+      (error) => {
+        console.error('Có lỗi xảy ra khi thêm danh mục:', error);
+        if (error.error) {
+          console.error('Chi tiết lỗi:', error.error);
         }
-      );
-      
+      }
+    );
+
   }
-  
+
   closeForm() {
     this.them = false;
     this.router.navigate(['/admin/categories/list']);

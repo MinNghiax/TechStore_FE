@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; 
+import { RouterModule } from '@angular/router';
 import { HomeRoutingModule } from './home-routing.module';
 import { HomeComponent } from '../home/home.component';
 import { FormsModule } from '@angular/forms';
@@ -15,9 +15,7 @@ import { ShoppingCartComponent } from './Product/shopping-cart/shopping-cart.com
 import { LoginComponent } from './User/login/login.component';
 import { ListOrderComponent } from './Order/list-order/list-order.component';
 import { DetailOrderComponent } from './Order/detail-order/detail-order.component';
-import { ReviewsComponent } from './Product/reviews/reviews.component';
 import { RegisterComponent } from './User/register/register.component';
-
 
 @NgModule({
   declarations: [
@@ -33,14 +31,8 @@ import { RegisterComponent } from './User/register/register.component';
     LoginComponent,
     ListOrderComponent,
     DetailOrderComponent,
-    ReviewsComponent,
-    RegisterComponent
+    RegisterComponent,
   ],
-  imports: [
-    CommonModule,
-    HomeRoutingModule,
-    RouterModule,
-    FormsModule
-  ]
+  imports: [CommonModule, HomeRoutingModule, RouterModule, FormsModule],
 })
-export class HomeModule { }
+export class HomeModule {}

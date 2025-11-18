@@ -1,80 +1,157 @@
-<nav class="breadcrumb">
-  <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" [routerLink]="['/home/list']" [routerLinkActive]="'active-link'"> Trang Chủ </a> 
-  <label class="small" style="font-size: small;" for="">  > Danh sách Sản phẩm</label>
-
-</nav>
-
 <div class="outer-container">
-  <div class="product-list">    
-    <!-- Kiểm tra nếu không có sản phẩm -->
-    <div *ngIf="products.length === 0">Không có sản phẩm nào!</div>
-    
-    <!-- Hiển thị danh sách sản phẩm -->
-    <div class="product-item" *ngFor="let product of  productSearch.length > 0 ? productSearch : paginatedProducts" style="background-color: white;">
-      <div class="product-image">
-        <a [routerLink]="['/home/product/detail/', product.product_id]" [routerLinkActive]="'active-link'">
-          <img [src]="product.PathAnh" />
+  <div *ngFor="let group of productGroups" class="category-section">
+    <div class="category-header">
+      <h2 class="category-title">{{ group.category_name | uppercase }} NỔI BẬT NHẤT</h2>
+      <div class="brand-list">
+        <a *ngFor="let brand of group.brands"
+          [routerLink]="['/home/product/category', group.category_id, 'brand', brand.brand_id]">
+          {{ brand.brand_name }}
         </a>
       </div>
-      <div class="product-details">
-        <p class="p1">{{ product.product_name }}</p>
-        <p class="p2">${{ product.price }}</p>
+      <a [routerLink]="['/home/product/category', group.category_id]" class="view-all-link">
+        Xem tất cả <i class="fa fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="product-carousel">
+      <button class="carousel-button prev" (click)="navigateCarousel(group, 'prev')"
+        [disabled]="group.currentIndex === 0">
+        <i class="fa fa-chevron-left"></i>
+      </button>
+
+      <div class="product-track-container">
+        <div class="product-track">
+          <div class="product-item" *ngFor="let product of group.visibleProducts">
+            <div class="product-image">
+              <a [routerLink]="['/home/product/detail/', product.product_id]">
+                <img [src]="product.PathAnh" [alt]="product.product_name"
+                  (error)="product.PathAnh = 'assets/images/default-image.jpg'" />
+              </a>
+            </div>
+            <div class="product-details">
+              <p class="p1">{{ product.product_name }}</p>
+              <p class="p2">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</p>
+            </div>
+            <div class="product-actions">
+              <button class="btn-buy-now" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                (click)="themDon(product)">
+                Mua ngay
+              </button>
+              <button class="btn-add-to-cart" (click)="addToCart(product)">
+                Thêm vào giỏ <i class="fa fa-shopping-cart"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="themDon()">
-        Mua ngay
+      <button class="carousel-button next" (click)="navigateCarousel(group, 'next')"
+        [disabled]="group.currentIndex + group.productsPerView >= group.products.length">
+        <i class="fa fa-chevron-right"></i>
       </button>
     </div>
   </div>
+
+  <div *ngIf="productGroups.length === 0" class="no-products-message">
+    Không có sản phẩm nào để hiển thị.
+  </div>
 </div>
-
-
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" *ngIf="userService.getCurrentUser()">
-  <div class="modal-dialog">
+<!-- Modal Thanh toán -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+  *ngIf="userService.getCurrentUser() && dangThemSua">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel" style="margin-left: 20px;">Thanh toán đơn hàng</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="margin-bottom: 20px;" (click)="dong()"></button>
+        <h5 class="modal-title" id="exampleModalLabel">Thanh toán đơn hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="dong()"></button>
       </div>
       <div class="modal-body">
-        <form #paymentForm="ngForm" (ngSubmit)="muaNgay(paymentForm)">
-          <div class="form-group">
-            <label for="address">Địa chỉ giao hàng</label>
-            <input type="text" id="address" name="address" placeholder="Nhập địa chỉ giao hàng" required ngModel>
+        <div *ngIf="showSuccessMessage" class="alert alert-success text-center">
+          Đặt hàng thành công! <br> Vui lòng chờ...
+        </div>
+
+        <div *ngIf="errorMessage && dangThemSua" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="bankInfo && transferInstructions" class="alert alert-info text-center">
+          <h5>Hướng dẫn chuyển khoản</h5>
+          <p>Quét mã QR, nhập thông tin chuyển khoản:</p>
+          <img [src]="qrCodeUrl" style="width: 250px; height: 250px; display: block; margin: 0 auto;"
+            (error)="qrCodeUrl = 'assets/images/default-image.jpg'; errorMessage = 'Không thể tải mã QR!'" />
+          <pre class="mt-3">{{ bankInfo }}</pre>
+          <p>{{ transferInstructions }}</p>
+          <button class="btn btn-primary mt-3" (click)="confirmTransfer()">Đã hiểu</button>
+        </div>
+
+        <div *ngIf="selectedItem && !showSuccessMessage && !bankInfo; else noSelection">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Hình ảnh</th>
+                <th>Tên sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Giá</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><img [src]="selectedItem.PathAnh" width="50"
+                    (error)="selectedItem.PathAnh = 'assets/images/default-image.jpg'" /></td>
+                <td>{{ selectedItem.product.product_name }}</td>
+                <td>
+                  <input type="number" [(ngModel)]="selectedItem.quantity" min="1"
+                    (change)="selectedItem.total_amount = selectedItem.price * selectedItem.quantity" />
+                </td>
+                <td>{{ selectedItem.price | currency:'VND' }}</td>
+                <td>{{ selectedItem.total_amount | currency:'VND' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noSelection>
+          <p>Vui lòng chọn một sản phẩm để thanh toán.</p>
+        </ng-template>
+
+        <form #paymentForm="ngForm" *ngIf="dangThemSua && !bankInfo && !showSuccessMessage"
+          (ngSubmit)="muaNgay(paymentForm)">
+          <div class="mb-3">
+            <label for="fullname" class="form-label">Họ tên:</label>
+            <input type="text" id="fullname" name="fullname" class="form-control" ngModel required
+              pattern="[A-Za-zÀ-ỹ\s]+" />
+            <div *ngIf="paymentForm.controls['fullname']?.touched && paymentForm.controls['fullname']?.invalid"
+              class="text-danger">
+              Họ tên chỉ chứa chữ cái và khoảng trắng.
+            </div>
           </div>
-          <div class="form-group">
-            <label for="phone">Số điện thoại</label>
-            <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" pattern="[0-9]{10}" required ngModel>
+          <div class="mb-3">
+            <label for="address" class="form-label">Địa chỉ:</label>
+            <input type="text" id="address" name="address" class="form-control" ngModel required minlength="5" />
+            <div *ngIf="paymentForm.controls['address']?.touched && paymentForm.controls['address']?.invalid"
+              class="text-danger">
+              Địa chỉ ít nhất 5 ký tự.
+            </div>
           </div>
-          <div class="form-group">
-            <label for="payment">Phương thức thanh toán</label>
-            <select id="payment" name="payment" required ngModel>
-              <option value="">Chọn một phương thức thanh toán</option>
-              <option value="credit_card">Thanh toán bằng thẻ tín dụng</option>
-              <option value="bank_transfer">Chuyển khoản</option>
-              <option value="cash_on_delivery">Thanh toán khi nhận hàng</option>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Số điện thoại:</label>
+            <input type="text" id="phone" name="phone" class="form-control" ngModel required pattern="[0-9]{10}" />
+            <div *ngIf="paymentForm.controls['phone']?.touched && paymentForm.controls['phone']?.invalid"
+              class="text-danger">
+              Số điện thoại phải 10 chữ số.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="payment" class="form-label">Phương thức thanh toán:</label>
+            <select id="payment" name="payment" class="form-select" ngModel required>
+              <option value="COD">Thanh toán khi nhận hàng</option>
+              <option value="Banking">Chuyển khoản</option>
             </select>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" [disabled]="!paymentForm.valid">Đặt ngay</button>
-          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="!paymentForm.valid">Xác nhận</button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="dong()">Hủy</button>
         </form>
       </div>
-
     </div>
   </div>
 </div>
-
-<div class="pagination-controls">
-  <button class="btn btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">
-    <i class="fas fa-chevron-left"></i>
-  </button>
-  <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-  <button class="btn btn-secondary" (click)="nextPage()" [disabled]="currentPage === totalPages">
-    <i class="fas fa-chevron-right"></i>
-  </button>
-</div>
-
-
-
-

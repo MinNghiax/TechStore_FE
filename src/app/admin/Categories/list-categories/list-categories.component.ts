@@ -9,9 +9,8 @@ import { Router } from '@angular/router';
   styleUrl: './list-categories.component.css'
 })
 export class ListCategoriesComponent {
-
   list_category: any[] = [];
-  category_name : string = '';
+  category_name: string = '';
   categories: Categories;
   them: boolean = false;
   selected_categoryService: any = null;
@@ -30,17 +29,21 @@ export class ListCategoriesComponent {
   }
 
   xoaDanhmuc(categories: Categories) {
-    this.categoryService.deleteCategory(categories.category_id).subscribe(
-      (data) => {
-        console.log(data);
-        this.DsDanhMucSp();
-      }
-    );
+    const confirmDelete = window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${categories.category_name}" không?`);
+    if (confirmDelete) {
+      this.categoryService.deleteCategory(categories.category_id).subscribe(
+        (data) => {
+          console.log(data);
+          this.DsDanhMucSp();
+        }
+      );
+    }
   }
+
 
   editDanhMuc(categories: Categories) {
     this.selected_categoryService = categories;
-    this.category_name = categories ? categories.category_name: '';
+    this.category_name = categories ? categories.category_name : '';
 
   }
 

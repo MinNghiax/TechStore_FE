@@ -1,224 +1,127 @@
-import { Component , Input} from '@angular/core';
-import { Order } from '../../../Models/order';
-import { ActivatedRoute } from '@angular/router';
-import { userService } from '../../../Service/userService';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
+import { Order } from '../../../Models/order';
+import { OrderDetails } from '../../../Models/order-details';
+import { Product } from '../../../Models/product';
+import { userService } from '../../../Service/userService';
 import { OrderService } from '../../../Service/order-service';
 import { OrderDetailService } from '../../../Service/order-detail-service';
-import { OrderDetails } from '../../../Models/order-details';
-import { User } from '../../../Models/users';
 import { ProductService } from '../../../Service/productService';
-import { Product } from '../../../Models/product';
 
+interface OrderWithDetails {
+  order: Order;
+  details: {
+    orderDetail: OrderDetails;
+    product: Product;
+  }[];
+}
 
 @Component({
   selector: 'app-view-order-history',
   templateUrl: './view-order-history.component.html',
-  styleUrl: './view-order-history.component.css'
+  styleUrls: ['./view-order-history.component.css']
 })
-export class ViewOrderHistoryComponent {
+export class ViewOrderHistoryComponent implements OnInit {
+  user_id!: number;
+  user_name!: string;
+  phone!: string;
+  PhotosUrl: string = '';
+  ordersWithDetails: OrderWithDetails[] = [];
 
-  order_id : number;
-  order : Order = new Order();
-  orderDetails: OrderDetails[] = []; 
-  user_name: string;
-  phone: string;
-  create_at: Date;
-  number: number;
-  PathAnh:string;
-  product_name:string;
-  status:string;
-  total_money: number;
-  message = '';
-  //user: User | null = null; 
-  user_id: number;
-
-  orderDetail : OrderDetails;
-  product : Product;
-
-    username: string;
-    orders: Order[] = [];
-    //order_details: OrderDetails[] = [];
-    order_custommer: User[] = [];
-    @Input() user: User[] = [];
-    DSproduct: Product[] = [];
-    
   constructor(
-    private route: ActivatedRoute,
-    private userServices: userService,
-    private router: Router,
+    private userService: userService,
     private orderService: OrderService,
     private orderDetailService: OrderDetailService,
-    private productService: ProductService
+    private productService: ProductService,
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (!idParam || isNaN(+idParam)) {
-      console.error('Invalid or missing ID:', idParam);
-      alert('Invalid or missing ID. Please check the URL.');
+    this.PhotosUrl = this.productService.PhotosUrl;
+
+    const current = this.userService.getCurrentUser();
+    if (!current) {
+      alert('Vui lòng đăng nhập!');
+      this.router.navigate(['/home/login']);
       return;
     }
-  
-    const id = +idParam; // Chuyển đổi sang số sau khi kiểm tra hợp lệ
-    this.layOrder(id);
 
-    const currentUser = this.userServices.getCurrentUser();
-    if (currentUser) {
-      this.user_id = currentUser.user_id;
-    } else {
-      this.user_id = null; // Đặt null để dễ kiểm tra
-    }
-    this.layUser(this.user_id);
+    this.user_id = current.user_id;
+    this.user_name = current.username;
+    this.phone = current.phone;
+
+    this.loadOrders(this.user_id);
   }
 
-  layOrder(id: number) {
-    this.orderService.getOrderByCustomerId(id).subscribe(
-      (data: Order[]) => { // Giả sử data là một mảng các đơn hàng
-        this.orders = data;
-        console.log("Danh sách orders:", this.orders); // Kiểm tra dữ liệu trả về
-  
-        if (this.orders.length > 0) {
-          // Duyệt qua tất cả các đơn hàng và gọi fetchUserAndOrderDetails cho từng đơn hàng
-          this.orders.forEach(order => {
-            // Cập nhật các thuộc tính của đơn hàng
-            this.create_at = order.create_at;
-            this.order_id = order.order_id;
-            this.status = order.order_status;
-            this.total_money = order.total_amount;
-  
-            this.orderDetailService.getOrderDetailById(this.order_id).subscribe(
-              (details: OrderDetails) => {
-                this.orderDetail = details; // Lưu tất cả các chi tiết đơn hàng vào mảng
-  
-                this.number = this.orderDetail.number_of_products;
-                console.log("Product ID: ", this.orderDetail.product_id);
-  
-                // Lấy thông tin sản phẩm cho mỗi orderDetail
-                this.productService.getProductDetails(this.orderDetail.product_id).subscribe(
-                  (product: Product) => {  // Thay đổi kiểu trả về từ Product[] sang Product
-                    console.log(product);
+  private loadOrders(userId: number): void {
+    this.orderService.getOrderByCustomerId(userId).subscribe(orders => {
+      const requests = orders.map(order =>
+        this.orderDetailService.getOrderDetailByOrderId(order.order_id).toPromise()
+          .then(details => Promise.all(
+            details.map(detail =>
+              this.productService.getProductDetails(detail.product_id).toPromise()
+                .then(product => ({ orderDetail: detail, product }))
+                .catch(err => {
+                  console.warn(`Không tìm thấy sản phẩm ${detail.product_id}:`, err);
+                  return null;
+                })
+            )
+          ).then(pairs => ({
+            order,
+            details: pairs.filter(p => p !== null)
+          })))
+          .catch(err => {
+            console.warn(`Không tìm thấy chi tiết đơn hàng ${order.order_id}:`, err);
+            return { order, details: [] };
+          })
+      );
 
-                    this.product = product
-  
-                    this.PathAnh = this.productService.PhotosUrl + '/'; 
-                    this.product_name = product.product_name;
-  
-                    // Xử lý các thông tin sản phẩm tại đây
-                    console.log("Sản phẩm:", product.product_name);
-                  },
-                  (error) => {
-                    console.error('Error fetching product details:', error);
-                    alert('Unable to fetch product details. Please try again later.');
-                  }
-                );
-  
-              },
-              (error) => {
-                console.error('Error fetching order details:', error);
-                alert('Unable to fetch order details. Please try again later.');
-              }
-            );
-  
-          });
-        }
+      Promise.all(requests).then(results => {
+        this.ordersWithDetails = results;
+        this.cdr.detectChanges();
+      });
+    });
+  }
+
+  viewOrderDetails(orderId: number, customerId: number): void {
+    this.router.navigate(['/home/order/detailOrder', orderId, customerId]);
+  }
+
+  cancelOrder(orderId: number): void {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn này?')) return;
+
+    const orderWithDetails = this.ordersWithDetails.find(o => o.order.order_id === orderId);
+    if (!orderWithDetails) return alert('Không tìm thấy đơn hàng.');
+
+    const status = orderWithDetails.order.order_status;
+    if (status === 'Chờ xác nhận')
+      return alert('Vui lòng liên hệ Zalo số 0337431736 để được hỗ trợ hoàn tiền.');
+    if (status !== 'Đang xử lý')
+      return alert(`Không thể hủy đơn vì đơn hàng đang ở trạng thái: "${status}".`);
+
+    this.orderService.deleteOrder(orderId).subscribe({
+      next: () => {
+        alert('Đã hủy đơn thành công.');
+        this.ordersWithDetails = this.ordersWithDetails.filter(o => o.order.order_id !== orderId);
       },
-      (error) => {
-        console.error('Error fetching orders:', error);
-        alert('Chưa có đơn hàng nào!!!');
+      error: err => {
+        console.error('Lỗi khi xóa đơn hàng:', err);
+        alert('Lỗi khi xóa đơn hàng.');
       }
-    );
-  }
-  
-  
-  
-  fetchOrderDetails(order: Order): void {
-        // Lấy chi tiết đơn hàng
-        this.order_id = order.order_id;
-        this.create_at = order.create_at;
-        this.status = order.order_status;
-        this.total_money = order.total_amount;
-  
-        this.orderDetailService.getOrderDetailByOrderId(this.order_id).subscribe(
-          (details: OrderDetails[]) => {
-            if (details.length > 0) {
-              this.orderDetails = details; // Lưu tất cả các chi tiết đơn hàng vào mảng
-              details.forEach(orderDetail => {
-                this.number = orderDetail.number_of_products;
-                console.log("Product ID: ", orderDetail.product_id);
-  
-                // Lấy thông tin sản phẩm tương ứng
-                this.productService.getProductDetails(orderDetail.product_id).subscribe(
-                  (product: Product) => {
-                    this.PathAnh = this.productService.PhotosUrl + '/' + product.image_url;
-                    this.product_name = product.product_name;
-  
-                    // Có thể xử lý các thông tin sản phẩm ở đây
-                    console.log("Sản phẩm:", product.product_name);
-                  },
-                  (error) => {
-                    console.error('Error fetching product details:', error);
-                    alert('Unable to fetch product details for some items. Please try again later.');
-                  }
-                );
-              });
-            } else {
-              console.log('No order details found.');
-              alert('No order details found.');
-            }
-          },
-          (error) => {
-            console.error('Error fetching order details:', error);
-            alert('Unable to fetch order details. Please try again later.');
-          }
-        );
-  }
-  
-  
-  
-  layUser(id:number){
-    this.userServices.getUserById(id).subscribe(
-      (user: User) => {
-        this.user_name = user.username;
-        this.phone = user.phone;
-        this.user_id = user.user_id;
-      }),
-      (error) => {
-        console.error('Error fetching user data:', error);
-        alert('Unable to fetch user data. Please try again later.');
-      }
+    });
   }
 
-  logout() {
-    this.userServices.logout().subscribe(
-      response => {
-        if (response.Success) {
-          // Reset thông tin người dùng trong service
-          this.userServices.setCurrentUser(null); // Xóa user trong service
-  
-          // Xóa thông tin trong localStorage
-          localStorage.removeItem('user');
-          
-          // Đặt lại đối tượng người dùng trong component
-          this.user = null;
-          this.user_id = null;
-  
-          // Điều hướng về trang đăng nhập
-          this.router.navigate(['/home/login']);
-        } else {
-          this.message = response.message || 'Đăng xuất thất bại.';
-        }
+  logout(): void {
+    this.userService.logout().subscribe({
+      next: () => {
+        alert('Đăng xuất thành công!');
+        this.router.navigate(['/home/login']);
       },
-      error => {
-        console.error('Logout error', error);
-        this.message = 'Đăng xuất thất bại. Vui lòng thử lại.';
+      error: err => {
+        console.error('Lỗi khi đăng xuất:', err);
+        alert('Đăng xuất thất bại!');
       }
-    );
+    });
   }
-  
-
-  viewOrderDetails(Id: number): void {
-    this.router.navigate(['home/order/detailOrder/', Id]);
-  }
-
 }

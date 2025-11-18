@@ -1,27 +1,25 @@
-
 <nav class="breadcrumb">
-  <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" [routerLink]="['/home/list']" [routerLinkActive]="'active-link'"> Trang Chủ </a> 
-  <label  style="font-size: small;" for="">  > Giỏ hàng </label>
-
+  <a style="font-size: small; margin-left: 50px;" class="breadcrumb-link" [routerLink]="['/home/list']">Trang Chủ</a>
+  <label style="font-size: small;"> > Giỏ hàng</label>
 </nav>
 
 <div class="shopping-cart">
-<div class="title">
-  <div>
-    <h1>Giỏ hàng của bạn</h1>
+  <div class="title">
+    <h1>Giỏ hàng</h1>
+    <button [routerLink]="['/home/user/viewOH', user_id]" class="btn btn-outline-primary">Lịch sử mua hàng</button>
   </div>
-<div>
-  <button [routerLink]="['/home/user/viewOH', user_id]" routerLinkActive="active-link">
-    Xem lịch sử mua hàng
-  </button>
-  
-</div>
-</div>
-  <!-- Danh sách sản phẩm -->
-  <div *ngIf="cartItems.length > 0; ">
+
+  <div *ngIf="errorMessage && !dangThemSua" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div style="margin-bottom: 10px;">
+    <input type="checkbox" (change)="toggleSelectAll($event)" /> Chọn tất cả
+  </div>
+
+  <div *ngIf="cartItems.length > 0; else emptyCart">
     <table class="cart-table">
       <thead>
         <tr>
+          <th>Chọn</th>
           <th>Sản phẩm</th>
           <th>Hình ảnh</th>
           <th>Giá</th>
@@ -32,85 +30,124 @@
       </thead>
       <tbody>
         <tr *ngFor="let item of cartItems; index as i">
+          <td><input type="checkbox" [(ngModel)]="item.selected" (change)="calculateTotal()" /></td>
           <td>{{ item.product.product_name }}</td>
-          <td>
-            <img 
-              [src]="item.PathAnh" 
-              alt="{{ item.product.product_name }}" 
-              class="product-image" 
-            />
-          </td>
+          <td><img [src]="item.PathAnh" class="product-image"
+              (error)="item.PathAnh = 'assets/images/default-image.jpg'" /></td>
           <td>{{ item.product.price | currency: 'VND' }}</td>
           <td>
-            <button (click)="decreaseQuantity(i)">-</button>
-            <span>{{ item.quantity }}</span>
-            <button (click)="increaseQuantity(i)">+</button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="decreaseQuantity(i)">–</button>
+            <span class="mx-2">{{ item.quantity }}</span>
+            <button class="btn btn-outline-secondary btn-sm" (click)="increaseQuantity(i)">+</button>
           </td>
           <td>{{ item.product.price * item.quantity | currency: 'VND' }}</td>
-          <td>
-            <button (click)="confirmDelete(i)">Xóa</button>
-          </td>
-        </tr>        
-        
+          <td><button class="btn btn-danger btn-sm" (click)="confirmDelete(i)">Xóa</button></td>
+        </tr>
       </tbody>
     </table>
 
-    <!-- Tổng tiền -->
     <div class="total-section">
       <h3>Tổng tiền: {{ totalAmount | currency: 'VND' }}</h3>
     </div>
 
-    <!-- Mã giảm giá -->
-    <div style="text-align: right;" class="coupon-section">
-      <!-- <input 
-        type="text" 
-        [(ngModel)]="couponCode" 
-        placeholder="Nhập mã giảm giá" 
-      /> -->
-      <button data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="themDon()">Thanh toán</button>
-      <!-- Modal -->
-      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel" style="margin-left: 20px;">Thanh toán đơn hàng</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="margin-bottom: 20px;" (click)="dong()"></button>
-            </div>
-            <div class="modal-body">
-              <form #paymentForm="ngForm" (ngSubmit)="muaNgay(paymentForm)">
-                <div class="form-group">
-                  <label for="address">Địa chỉ</label>
-                  <input type="text" id="address" name="address" placeholder="Nhập địa chỉ giao hàng" required ngModel>
-                </div>
-          
-                <div class="form-group">
-                  <label for="phone" style="margin-right: 20px;">Số điện thoại</label>
-                  <input type="tel" id="phone" name="phone" placeholder="Nhập số điện thoại" pattern="[0-9]{10}" required ngModel>
-                </div>
-          
-                <div class="form-group">
-                  <label for="payment">Phương thức thanh toán</label>
-                  <select id="payment" name="payment" required ngModel>
-                    <option value="">Chọn một phương thức thanh toán</option>
-                    <option value="credit_card">Thanh toán bằng thẻ tín dụng</option>
-                    <option value="bank_transfer">Chuyển khoản</option>
-                    <option value="cash_on_delivery">Thanh toán khi nhận hàng</option>
-                  </select>
-                </div>
-          
-                <div class="modal-footer">
-                  <button type="submit" class="btn btn-primary" [disabled]="!paymentForm.valid">Đặt ngay</button>
-                </div>
-              </form>
-            </div>
+    <div style="text-align: right;">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="themDon()">Thanh
+        toán</button>
+    </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Thanh toán đơn hàng</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="dong()"></button>
           </div>
-          
+          <div class="modal-body">
+            <div *ngIf="showSuccessMessage" class="alert alert-success text-center">
+              Đặt hàng thành công! <br> Vui lòng chờ...
+            </div>
+
+            <div *ngIf="selectedItems.length > 0; else noSelection">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of selectedItems">
+                    <td><img [src]="item.PathAnh" width="50"
+                        (error)="item.PathAnh = 'assets/images/default-image.jpg'" /></td>
+                    <td>{{ item.product.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.product.price | currency: 'VND' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noSelection>
+              <p>Vui lòng chọn sản phẩm để thanh toán.</p>
+            </ng-template>
+
+            <div *ngIf="errorMessage && dangThemSua" class="alert alert-danger">{{ errorMessage }}</div>
+
+            <div *ngIf="bankInfo && transferInstructions" class="alert alert-info text-center">
+              <h5>Hướng dẫn chuyển khoản</h5>
+              <p>Quét mã QR, nhập thông tin chuyển khoản:</p>
+              <img [src]="qrCodeUrl" style="width: 250px; height: 250px; display: block; margin: 0 auto;"
+                (error)="qrCodeUrl = 'assets/images/default-image.jpg'; errorMessage = 'Không thể tải mã QR!'" />
+              <pre class="mt-3">{{ bankInfo }}</pre>
+              <p>{{ transferInstructions }}</p>
+              <button class="btn btn-primary mt-3" (click)="confirmTransfer()">Đã hiểu</button>
+            </div>
+
+            <form #paymentForm="ngForm" *ngIf="dangThemSua && !bankInfo && !showSuccessMessage"
+              (ngSubmit)="muaNgay(paymentForm)">
+              <div class="mb-3">
+                <label for="fullname" class="form-label">Họ tên:</label>
+                <input type="text" id="fullname" name="fullname" class="form-control" ngModel required
+                  pattern="[A-Za-zÀ-ỹ\s]+" />
+                <div *ngIf="paymentForm.controls['fullname']?.touched && paymentForm.controls['fullname']?.invalid"
+                  class="text-danger">
+                  Họ tên chỉ chứa chữ cái và khoảng trắng.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="address" class="form-label">Địa chỉ:</label>
+                <input type="text" id="address" name="address" class="form-control" ngModel required minlength="5" />
+                <div *ngIf="paymentForm.controls['address']?.touched && paymentForm.controls['address']?.invalid"
+                  class="text-danger">
+                  Địa chỉ ít nhất 5 ký tự.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="form-label">Số điện thoại:</label>
+                <input type="text" id="phone" name="phone" class="form-control" ngModel required pattern="[0-9]{10}" />
+                <div *ngIf="paymentForm.controls['phone']?.touched && paymentForm.controls['phone']?.invalid"
+                  class="text-danger">
+                  Số điện thoại phải 10 chữ số.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="payment" class="form-label">Phương thức thanh toán:</label>
+                <select id="payment" name="payment" class="form-select" ngModel required>
+                  <option value="COD">Thanh toán khi nhận hàng</option>
+                  <option value="Banking">Chuyển khoản</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary" [disabled]="!paymentForm.valid">Xác nhận</button>
+              <button type="button" class="btn btn-secondary ms-2" (click)="dong()">Hủy</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Giỏ hàng trống -->
   <ng-template #emptyCart>
-    <p>Giỏ hàng của bạn hiện đang trống.</p>
+    <p>Giỏ hàng trống.</p>
   </ng-template>
 </div>

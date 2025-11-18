@@ -8,38 +8,37 @@ import { Order } from '../Models/order';
   providedIn: 'root'
 })
 export class ReviewService {
-    private apiUrl = 'http://localhost:5038/api/Reviews';
+  private apiUrl = 'https://localhost:7139/api/Reviews';
 
-    private httpOptions = {
-      headers: new HttpHeaders({
-        "Content-Type": 'application/json'
-      })
-    }
-    constructor(private http: HttpClient) {}
+  private httpOptions = {
+    headers: new HttpHeaders({
+      "Content-Type": 'application/json'
+    })
+  }
+  constructor(private http: HttpClient) { }
 
-    getReviewById(id: number): Observable<any> {
-      return this.http.get<any>(`${this.apiUrl}/${id}`);
-    }
+  getReviewById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
 
-    getReviewsByProduct(productId: number): Observable<any> {
-      return this.http.get<any>(`${this.apiUrl}/product/${productId}`);
-    }
+  getReviewsByProduct(productId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/product/${productId}`);
+  }
 
-    addReview(review: any): Observable<any> {
-      return this.http.post<any>(this.apiUrl, review);
-    }
+  addReview(review: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, review);
+  }
 
-    getReviewsByUser(userId: number): Observable<any[]> {
-      return this.http.get<any>(`${this.apiUrl}/user/${userId}`);
-    }
+  getReviewsByUser(userId: number): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`);
+  }
 
-    updateReview(id: number, body: any): Observable<any> {
-        const url = `${this.apiUrl}/${id}`;
-        return this.http.put<any>(url, body, this.httpOptions);
-      }
-    
-      // Delete a review by ID
-      deleteReview(id: number): Observable<any> {
-        return this.http.delete(`${this.apiUrl}/${id}`);
-      }
+  updateReview(id: number, body: any): Observable<any> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.put<any>(url, body, this.httpOptions);
+  }
+
+  deleteReview(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

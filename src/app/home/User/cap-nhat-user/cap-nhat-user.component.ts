@@ -15,7 +15,7 @@ export class CapNhatUserComponent {
   user_id: number;
   username: string;
   email: string;
-  phone:string;
+  phone: string;
   address: string;
 
 
@@ -23,14 +23,13 @@ export class CapNhatUserComponent {
     private route: ActivatedRoute,
     private userServices: userService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const id = +this.route.snapshot.paramMap.get('id'); // Ensure this matches the route parameter for the user ID
-     // Retrieve existing user data and bind to the form
-     this.userServices.getUserById(id).subscribe(
+    const id = +this.route.snapshot.paramMap.get('id');
+    this.userServices.getUserById(id).subscribe(
       (data: User) => {
-        this.user = data; // Bind the existing data to the user object
+        this.user = data;
       },
       (error) => {
         console.error('Error fetching user:', error);
@@ -40,11 +39,10 @@ export class CapNhatUserComponent {
   }
 
   updateUser(): void {
-    // Call the service method to update user data
     this.userServices.updateUser(this.user.user_id, this.user).subscribe(
       () => {
         alert('Cập nhật thông tin tài khoản thành công!');
-        this.router.navigate(['/user-list']); // Navigate to a different route after successful update
+        this.router.navigate(['/user-list']);
       },
       (error) => {
         console.error('Error updating user:', error);

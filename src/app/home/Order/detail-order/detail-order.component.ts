@@ -1,160 +1,138 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router'; 
+import { ActivatedRoute, Router } from '@angular/router';
 import { OrderDetailService } from '../../../Service/order-detail-service';
 import { OrderDetails } from '../../../Models/order-details';
 import { Product } from '../../../Models/product';
 import { ProductService } from '../../../Service/productService';
-import { userService } from '../../../Service/userService'; 
+import { userService } from '../../../Service/userService';
 import { OrderService } from '../../../Service/order-service';
 import { Order } from '../../../Models/order';
-
-
 
 @Component({
   selector: 'app-detail-order',
   templateUrl: './detail-order.component.html',
-  styleUrl: './detail-order.component.css'
+  styleUrls: ['./detail-order.component.css']
 })
 export class DetailOrderComponent {
-
-  customer_name: string;
-  PathAnh: string;
-  product_name:string;
-  product: Product;
+  customer_name: string = '';
+  customer_phone: string = '';
+  customer_address: string = '';
+  order_status: string = '';
+  id_customer: number | null = null;
   orderDetails: OrderDetails;
-  order_status: string;
-  id_customer: number;
-  customer_phone: string;
-  customer_address; string;
+  order: Order;
+  orderDetailsList: OrderDetails[] = [];
+  products: Product[] = [];
 
   constructor(
-    private order_detailService: OrderDetailService, 
-    private productService :ProductService ,
+    private order_detailService: OrderDetailService,
+    public productService: ProductService,
     private orderService: OrderService,
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     private _userService: userService
-  ) {}
+  ) { }
 
   ngOnInit() {
-    const orderId = Number(this.route.snapshot.paramMap.get('id'));
-    console.log("orrderId", orderId);
-    if (orderId) {
-      this.loadOrderDetails(orderId);
+    const orderId = Number(this.route.snapshot.paramMap.get('id_order'));
+    const customerId = Number(this.route.snapshot.paramMap.get('id_customer'));
 
+    if (!isNaN(orderId)) {
+      this.id_customer = customerId;
+      this.loadOrderDetails(orderId);
+      this.loadUser(this.id_customer);
     } else {
-      console.error("Lỗi! ID is invalid or not found.");
+      console.error("Lỗi! ID đơn hàng không hợp lệ.");
     }
   }
 
-  
 
-  loadOrderDetails(id: number): void {
-    // console.log('hiện dữ liệu',id);
-    this.order_detailService.getOrderDetailById(id).subscribe({
-      next: (data) => {
-        this.orderDetails= data;
-
-        this.loadProducts(this.orderDetails.product_id);
-        this.loadOrder(this.orderDetails.order_id);
+  loadOrderDetails(orderId: number): void {
+    this.order_detailService.getOrderDetailByOrderId(orderId).subscribe({
+      next: (details) => {
+        this.orderDetailsList = details;
+        this.loadOrder(orderId);
+        this.products = [];
+        details.forEach(detail => {
+          this.productService.getProductDetails(detail.product_id).subscribe({
+            next: (product) => this.products.push(product),
+            error: (err) => console.error('Lỗi khi lấy sản phẩm:', err)
+          });
+        });
       },
       error: (err) => {
         console.error('Lỗi khi lấy chi tiết đơn hàng:', err);
       }
     });
   }
-  
 
-  loadUser(id:number){
-    this._userService.getUserById(id).subscribe({
-      next: (user) => {
-        this.loadOrder(this.id_customer);
-        this.customer_name = user.username;
-        this.id_customer = user.user_id;
-        this.customer_address = user.address;
-        this.customer_phone = user.phone;
-  
-        console.log("Customer Details:", {
-          name: this.customer_name,
-          id: this.id_customer,
-          address: this.customer_address,
-          phone: this.customer_phone
-        });
-      },
-      error: (err) => {
-        console.error(`Lỗi khi lấy user với ID ${id}:`, err);
-      }
-    });
-  }
-  
-  loadProducts(id: number): void {
-    this.productService.getProductDetails(id).subscribe({
-      next: (product) => {
-        console.log('Product Data:', product);
-       this.PathAnh = this.productService.PhotosUrl + "/" + product.image_url;
-        this.product_name = product.product_name;
-        console.log('pro', this.product_name);
-      },
-      error: (err) => {
-        console.error(`Lỗi khi lấy sản phẩm với ID ${id}:`, err);
-      }
-    });
-  }
-
-
-  loadOrder(id:number):void{
+  loadOrder(id: number): void {
     this.orderService.getOrderById(id).subscribe({
       next: (order) => {
+        this.order = order;
         this.order_status = order.order_status;
-        this.id_customer = order.customer_id;
-        this.loadUser(this.id_customer);
-        
+      },
+      error: (err) => console.error(`Lỗi khi lấy đơn hàng ID ${id}:`, err)
+    });
+  }
+
+
+  loadUser(id: number): void {
+    if (id == null) return;
+
+    this._userService.getUserById(id).subscribe({
+      next: (user) => {
+        this.customer_name = user.username;
+        this.customer_address = user.address;
+        this.customer_phone = user.phone;
+      },
+      error: (err) => console.error(`Lỗi khi lấy người dùng ID ${id}:`, err)
+    });
+  }
+
+  huyOrderDetail(): void {
+    if (!this.order) {
+      alert("Không tìm thấy thông tin đơn hàng để hủy.");
+      return;
+    }
+
+    if (this.order.order_status === 'Chờ xác nhận') {
+      alert('Vui lòng liên hệ Zalo số 0337431736 để được hỗ trợ hoàn tiền');
+      return;
+    }
+
+    if (this.order.order_status !== 'Đang xử lý') {
+      alert(`Không thể hủy đơn vì đơn hàng đang ở trạng thái: "${this.order.order_status}".`);
+      return;
+    }
+
+
+    const confirmCancel = confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?");
+    if (!confirmCancel) return;
+
+    this.orderService.deleteOrder(this.order.order_id).subscribe({
+      next: () => {
+        alert('Đơn hàng đã được hủy thành công.');
+        if (this.id_customer != null) {
+          this.router.navigate(['home/user/viewOH', this.id_customer]);
+        }
       },
       error: (err) => {
-        console.error(`Lỗi khi lấy order với ID ${id}:`, err);
+        console.error('Lỗi khi hủy đơn hàng:', err);
+        alert('Không thể hủy đơn hàng. Vui lòng thử lại sau.');
       }
     });
-
   }
-  
-
-  huyOrderDetail(order: OrderDetails) {
-    // Gọi API để lấy thông tin chi tiết của đơn hàng từ backend
-    this.orderService.getOrderById(order.order_id).subscribe(
-      (orderDetails: Order) => {
-        // Kiểm tra trạng thái đơn hàng
-        if (orderDetails.order_status === "Đang vận chuyển") {
-          alert('Đơn hàng đang vận chuyển, không thể hủy!');
-          return; // Dừng thực hiện nếu trạng thái không hợp lệ
-        }
-  
-        // Nếu trạng thái hợp lệ, tiếp tục gọi API hủy đơn
-        this.orderService.deleteOrder(orderDetails.order_id).subscribe(
-          (data) => {
-            alert('Đơn hàng đã được hủy thành công.');
-            // Điều hướng lại trang danh sách đơn hàng
-            this.router.navigate(['home/user/viewOH', this.id_customer]);
-          },
-          (error) => {
-            console.error('Lỗi khi hủy đơn hàng:', error);
-            alert('Không thể hủy đơn hàng. Vui lòng thử lại sau.');
-          }
-        );
-      },
-      (error) => {
-        console.error('Lỗi khi lấy thông tin đơn hàng:', error);
-        alert('Không thể kiểm tra trạng thái đơn hàng. Vui lòng thử lại sau.');
-      }
-    );
+  get totalMoney(): number {
+    return this.orderDetailsList.reduce((sum, detail) => sum + detail.total_money, 0);
   }
-  
-  
 
-
-
-  // Navigate back to the order list page
-  goBackToOrderList( ): void {
-    this.router.navigate(['home/user/viewOH', this.id_customer]); // Assuming the route for order list is '/order-list'
+  goBackToOrderList(): void {
+    console.log("Đã bấm nút quay lại, id_customer =", this.id_customer);
+    if (this.id_customer != null) {
+      this.router.navigate(['home/user/viewOH', this.id_customer]);
+    } else {
+      alert('Không tìm thấy ID khách hàng để quay lại.');
+    }
   }
 }

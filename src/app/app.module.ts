@@ -6,11 +6,12 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { HomeModule } from './home/home.module';
 import { AdminModule } from './admin/admin.module';
-
+import { ChatbotComponent } from './chatbot/chatbot.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    ChatbotComponent
   ],
   imports: [
     BrowserModule,
@@ -19,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
     FormsModule,
     HomeModule,
     AdminModule,
+
   ],
   providers: [
     provideClientHydration()

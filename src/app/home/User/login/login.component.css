@@ -1,109 +1,144 @@
-.outer{
-  background-color: #f0f0f0;
-}
-.login-container {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
 
-.login-container form {
-  background-color: rgba(236, 247, 248, 0.8);
-  padding: 20px;
-  border-radius: 8px;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Hiệu ứng hover cho form */
-.login-container form:hover {
-  transform: translateY(-5px); /* Khi hover vào form, sẽ nhảy lên */
-}
-
-.login-container form label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  font-size: larger;
-  color: #4CAF50;
-}
-
-.login-container form input[type="text"],
-.login-container form input[type="password"] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+* {
   box-sizing: border-box;
-  transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-/* Khi hover vào input, sẽ nhảy lên */
-.login-container form input[type="text"]:hover,
-.login-container form input[type="password"]:hover {
-  transform: translateY(-3px); /* Nhảy lên nhẹ */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm hiệu ứng bóng */
+body {
+  margin: 0;
+  background: linear-gradient(to right, #e0f7fa, #f1fcff);
+  color: #333;
 }
 
-/* Khi focus vào input, sẽ thay đổi màu viền */
-.login-container form input:focus {
-  outline: none;
-  border: 1px solid #4CAF50;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+/* Breadcrumb */
+nav.breadcrumb {
+  margin: 30px 0 10px 60px;
+  font-size: 14px;
+  color: #555;
 }
 
-/* Nút submit */
-.login-container form button[type="submit"] {
-  width: 150px;
-  height: 50px;
-  padding: 10px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Hiệu ứng hover cho nút submit */
-.login-container form button[type="submit"]:hover {
-  transform: translateY(-5px); /* Nhảy lên khi hover */
-  background-color: #45a049; /* Màu khi hover */
-}
-
-/* Link đăng ký */
-.login-container form a {
-  display: inline-block;
-  margin-top: 10px;
+.breadcrumb-link {
+  color: #007bff;
   text-decoration: none;
-  color: #e61313;
+  font-weight: 500;
+  transition: color 0.3s;
 }
 
-.login-container form a:hover {
+.breadcrumb-link:hover {
+  color: #0056b3;
   text-decoration: underline;
 }
 
+.breadcrumb-separator {
+  margin: 0 6px;
+}
 
-  /* Breadcrumb Container */
-  .breadcrumb {
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    border-radius: 5px;
+.breadcrumb-current {
+  color: #999;
+}
 
+/* Login Container */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background: transparent;
+  padding: 40px 15px;
+}
+
+/* Login Box */
+.login-box {
+  background-color: #ffffff;
+  padding: 50px 40px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  max-width: 420px;
+  width: 100%;
+  animation: slideUp 0.6s ease-in-out;
+}
+
+/* Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
   }
-
-  
-  .breadcrumb-link {
-    font-size: 16px;
-    font-weight: 500;
-    color: #0275d8; /* Blue color for the link */
-    text-decoration: none; /* Remove underline from links */
-    transition: color 0.3s ease; /* Smooth transition on hover */
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
+}
+
+/* Tiêu đề */
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #007bff;
+  font-weight: 600;
+  font-size: 26px;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+  outline: none;
+}
+
+/* Nút Đăng Nhập */
+button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(to right, #00bcd4, #2196f3);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.4);
+}
+
+/* Đăng ký link */
+.register-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.register-link a {
+  color: #007bff;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.register-link a:hover {
+  color: #0056b3;
+}
